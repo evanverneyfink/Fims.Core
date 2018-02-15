@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Core", "Fims.Core\Fims
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JsonLd", "JsonLd\JsonLd.csproj", "{F725CA7A-6C95-4E38-AD12-0DDE8B8DD691}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Server", "Fims.Server2\Fims.Server.csproj", "{7FDF10DC-CAA2-440E-9971-2760289FDF1E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Server", "Fims.Server\Fims.Server.csproj", "{7FDF10DC-CAA2-440E-9971-2760289FDF1E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Pluralize.NET", "Pluralize.NET\Pluralize.NET.csproj", "{70695F88-BAB6-4AFA-94F5-81CDCD2BB2EE}"
 EndProject
