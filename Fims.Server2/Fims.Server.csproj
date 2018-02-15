@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Fims.Server</AssemblyName>
+    <RootNamespace>Fims.Server</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fims.Core\Fims.Core.csproj" />
+    <ProjectReference Include="..\JsonLd\JsonLd.csproj" />
+    <ProjectReference Include="..\Pluralize.NET\Pluralize.NET.csproj" />
+  </ItemGroup>
+
+</Project>

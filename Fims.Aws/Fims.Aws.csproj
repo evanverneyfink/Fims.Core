@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Amazon.Lambda" Version="0.10.1" />
+    <PackageReference Include="Amazon.Lambda.APIGatewayEvents" Version="1.1.2" />
+    <PackageReference Include="Amazon.Lambda.Core" Version="1.0.0" />
+    <PackageReference Include="AWSSDK.Core" Version="3.3.21.11" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.6" />
+    <PackageReference Include="AWSSDK.Lambda" Version="3.3.12" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fims.Server2\Fims.Server.csproj" />
+  </ItemGroup>
+
+</Project>
