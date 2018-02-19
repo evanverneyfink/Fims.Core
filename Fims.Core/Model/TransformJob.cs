@@ -8,8 +8,8 @@ namespace Fims.Core.Model
         {
         }
 
-        public TransformJob(string jobProfileId, JObject jobInput, AsyncEndpoint asyncEndpoint)
-            : base(jobProfileId, jobInput, asyncEndpoint)
+        public TransformJob(JToken jobProfile, JToken jobInput, JToken asyncEndpointToken)
+            : base(jobProfile, jobInput, asyncEndpointToken)
         {
         }
     }

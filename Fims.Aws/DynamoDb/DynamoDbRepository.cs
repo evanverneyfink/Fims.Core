@@ -14,10 +14,10 @@ using DynamoDbTable = Amazon.DynamoDBv2.DocumentModel.Table;
 
 namespace Fims.Aws.DynamoDb
 {
-    public class DynamoDbRepository<T> : IRepository<T> where T : Resource
+    public class DynamoDbRepository : IRepository
     {
         /// <summary>
-        /// Instantiates a <see cref="DynamoDbRepository{T}"/>
+        /// Instantiates a <see cref="DynamoDbRepository"/>
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="tableConfigProvider"></param>
@@ -45,7 +45,7 @@ namespace Fims.Aws.DynamoDb
         /// <summary>
         /// Gets the DynamoDB table
         /// </summary>
-        private async Task<DynamoDbTable> Table()
+        private async Task<DynamoDbTable> Table<T>()
         {
             var tableName = TableConfigProvider.GetTableName<T>();
             var keyName = TableConfigProvider.GetTableKeyName<T>();
@@ -92,9 +92,9 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<T> Get(string id)
+        public async Task<T> Get<T>(string id) where T : Resource
         {
-            return (await (await Table()).GetItemAsync(new Primitive(id))).ToObject<T>();
+            return (await (await Table<T>()).GetItemAsync(new Primitive(id))).ToObject<T>();
         }
 
         /// <summary>
@@ -102,9 +102,9 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <param name="parameters"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<T>> Query(IDictionary<string, string> parameters)
+        public async Task<IEnumerable<T>> Query<T>(IDictionary<string, string> parameters) where T : Resource
         {
-            return (await (await Table()).Scan(parameters.ToScanFilter()).GetRemainingAsync()).Select(d => d.ToObject<T>());
+            return (await (await Table<T>()).Scan(parameters.ToScanFilter()).GetRemainingAsync()).Select(d => d.ToObject<T>());
         }
 
         /// <summary>
@@ -112,9 +112,9 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public async Task<T> Create(T resource)
+        public async Task<T> Create<T>(T resource) where T : Resource
         {
-            return (await (await Table()).PutItemAsync(resource.ToDocument())).ToObject<T>();
+            return (await (await Table<T>()).PutItemAsync(resource.ToDocument())).ToObject<T>();
         }
 
         /// <summary>
@@ -122,9 +122,9 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public async Task<T> Update(T resource)
+        public async Task<T> Update<T>(T resource) where T : Resource
         {
-            return (await (await Table()).PutItemAsync(resource.ToDocument())).ToObject<T>();
+            return (await (await Table<T>()).PutItemAsync(resource.ToDocument())).ToObject<T>();
         }
 
         /// <summary>
@@ -132,9 +132,9 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task Delete(string id)
+        public async Task Delete<T>(string id) where T : Resource
         {
-            await (await Table()).DeleteItemAsync(new Primitive(id));
+            await (await Table<T>()).DeleteItemAsync(new Primitive(id));
         }
     }
 }

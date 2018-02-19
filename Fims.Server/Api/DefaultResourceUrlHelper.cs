@@ -2,15 +2,15 @@
 
 namespace Fims.Server.Api
 {
-    internal class DefaultResourceUrlParser : IResourceUrlParser
+    internal class DefaultResourceUrlHelper : IResourceUrlHelper
     {
         /// <summary>
-        /// Instantiates a <see cref="DefaultResourceUrlParser"/>
+        /// Instantiates a <see cref="DefaultResourceUrlHelper"/>
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="environment"></param>
         /// <param name="urlSegmentResourceMapper"></param>
-        public DefaultResourceUrlParser(ILogger logger, IEnvironment environment, IUrlSegmentResourceMapper urlSegmentResourceMapper)
+        public DefaultResourceUrlHelper(ILogger logger, IEnvironment environment, IUrlSegmentResourceMapper urlSegmentResourceMapper)
         {
             Logger = logger;
             Environment = environment;
@@ -98,6 +98,27 @@ namespace Fims.Server.Api
             cur.Url = Environment.PublicUrl.TrimEnd('/') + "/" + path.TrimStart('/');
 
             return cur;
+        }
+
+        /// <summary>
+        /// Gets the path to a resource
+        /// </summary>
+        /// <param name="resourceDescriptor"></param>
+        /// <returns></returns>
+        public string GetUrlPath(ResourceDescriptor resourceDescriptor)
+        {
+            // start with the type
+            var path = $"/{UrlSegmentResourceMapper.GetResourceTypeName(resourceDescriptor.Type)}";
+
+            // check if we have an ID
+            if (resourceDescriptor.Id != null)
+                path += $"/{resourceDescriptor.Id}";
+
+            // recurse up the tree for child collections
+            if (resourceDescriptor.Parent != null)
+                path = GetUrlPath(resourceDescriptor.Parent) + path;
+
+            return path;
         }
     }
 }

@@ -19,14 +19,14 @@ namespace Fims.Server.Api
         /// <param name="jsonLdContextManager"></param>
         /// <param name="jsonLdResourceHelper"></param>
         /// <param name="environment"></param>
-        /// <param name="resourceUrlParser"></param>
+        /// <param name="resourceUrlHelper"></param>
         /// <param name="resourceHandlerProvider"></param>
         /// <param name="requestContext"></param>
         public DefaultRequestHandler(ILogger logger,
                                      IJsonLdContextManager jsonLdContextManager,
                                      IJsonLdResourceHelper jsonLdResourceHelper,
                                      IEnvironment environment,
-                                     IResourceUrlParser resourceUrlParser,
+                                     IResourceUrlHelper resourceUrlHelper,
                                      IResourceHandlerProvider resourceHandlerProvider,
                                      IRequestContext requestContext)
         {
@@ -34,7 +34,7 @@ namespace Fims.Server.Api
             JsonLdContextManager = jsonLdContextManager;
             JsonLdResourceHelper = jsonLdResourceHelper;
             Environment = environment;
-            ResourceUrlParser = resourceUrlParser;
+            ResourceUrlHelper = resourceUrlHelper;
             ResourceHandlerProvider = resourceHandlerProvider;
             RequestContext = requestContext;
         }
@@ -62,7 +62,7 @@ namespace Fims.Server.Api
         /// <summary>
         /// Gets the resource type mapper
         /// </summary>
-        private IResourceUrlParser ResourceUrlParser { get; }
+        private IResourceUrlHelper ResourceUrlHelper { get; }
 
         /// <summary>
         /// Gets the request processor
@@ -92,7 +92,7 @@ namespace Fims.Server.Api
             Logger.Debug("Parsing resource descriptor from path...");
 
             // get the resource descriptor
-            var resourceDescriptor = ResourceUrlParser.GetResourceDescriptor(RequestContext.Path);
+            var resourceDescriptor = ResourceUrlHelper.GetResourceDescriptor(RequestContext.Path);
             if (resourceDescriptor == null)
                 return RequestContext.CreateResponse(HttpStatusCode.NotFound);
 

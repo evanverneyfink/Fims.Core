@@ -1,10 +1,16 @@
-﻿namespace Fims.Core.Model
+﻿using Newtonsoft.Json.Linq;
+
+namespace Fims.Core.Model
 {
-    public abstract class Locator : Resource
+    public class Locator : Resource
     {
-        protected Locator()
-            : base(nameof(Locator))
+        public Locator()
         {
+        }
+
+        public Locator(JObject jObject)
+        {
+            CopyFrom(jObject);
         }
     }
 }

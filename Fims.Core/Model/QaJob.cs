@@ -8,8 +8,8 @@ namespace Fims.Core.Model
         {
         }
 
-        public QaJob(string jobProfileId, JObject jobInput, AsyncEndpoint asyncEndpoint)
-            : base(jobProfileId, jobInput, asyncEndpoint)
+        public QaJob(JToken jobProfile, JToken jobInput, JToken asyncEndpointToken)
+            : base(jobProfile, jobInput, asyncEndpointToken)
         {
         }
     }

@@ -1,24 +1,24 @@
 ﻿using System;
-using Fims.Core.JsonLd;
 
 namespace Fims.Core.Model
 {
-    public abstract class Resource
+    public abstract class Resource : FimsObject
     {
         protected Resource(string type = null)
+            : base(type)
         {
-            ContextUrl = Contexts.Default.Url;
-            Type = type ?? GetType().Name;
         }
 
-        public string Id { get; set; }
+        public DateTime? DateCreated
+        {
+            get => Get<DateTime>(nameof(DateCreated));
+            set => Set(nameof(DateCreated), value);
+        }
 
-        public string ContextUrl { get; set; }
-
-        public string Type { get; set; }
-
-        public DateTime? Created { get; set; }
-
-        public DateTime? Modified { get; set; }
+        public DateTime? DateModified
+        {
+            get => Get<DateTime>(nameof(DateModified));
+            set => Set(nameof(DateModified), value);
+        }
     }
 }

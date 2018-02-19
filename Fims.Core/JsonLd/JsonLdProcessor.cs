@@ -5,18 +5,21 @@ using Newtonsoft.Json.Linq;
 
 namespace Fims.Core.JsonLd
 {
-    class JsonLdProcessor : IJsonLdProcessor
+    public class JsonLdProcessor : IJsonLdProcessor
     {
         /// <summary>
         /// Instantiates a <see cref="JsonLdProcessor"/>
         /// </summary>
         /// <param name="options"></param>
-        public JsonLdProcessor(IOptions<JsonLdOptions> options)
+        /// <param name="documentLoader"></param>
+        public JsonLdProcessor(IOptions<JsonLdOptions> options, IDocumentLoader documentLoader)
         {
-            Options = options.Value ?? new JsonLdOptions();
+            Options = options?.Value ?? new JsonLdOptions();
 
             if (Options.format == null)
                 Options.format = "application/nquads";
+
+            Options.documentLoader = documentLoader;
         }
 
         /// <summary>

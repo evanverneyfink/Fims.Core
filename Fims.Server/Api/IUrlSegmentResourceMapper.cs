@@ -11,5 +11,12 @@ namespace Fims.Server.Api
         /// <param name="parentType"></param>
         /// <returns></returns>
         Type GetResourceType(string typeName, Type parentType = null);
+
+        /// <summary>
+        /// Gets the type name for a resource type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        string GetResourceTypeName(Type type);
     }
 }

@@ -8,8 +8,8 @@ namespace Fims.Core.Model
         {
         }
 
-        public CaptureJob(string jobProfileId, JObject jobInput, AsyncEndpoint asyncEndpoint)
-            : base(jobProfileId, jobInput, asyncEndpoint)
+        public CaptureJob(JToken jobProfileId, JToken jobInput, JToken asyncEndpointToken)
+            : base(jobProfileId, jobInput, asyncEndpointToken)
         {
         }
     }

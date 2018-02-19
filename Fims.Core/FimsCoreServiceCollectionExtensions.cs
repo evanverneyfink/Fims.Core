@@ -1,7 +1,9 @@
 ﻿using Fims.Core.Http;
 using Fims.Core.JsonLd;
 using Fims.Core.Services;
+using JsonLD.Core;
 using Microsoft.Extensions.DependencyInjection;
+using JsonLdProcessor = Fims.Core.JsonLd.JsonLdProcessor;
 
 namespace Fims.Core
 {
@@ -11,6 +13,7 @@ namespace Fims.Core
         {
             return
                 serviceCollection.AddOptions()
+                                 .AddSingleton<IDocumentLoader, CachedDocumentLoader>()
                                  .AddSingleton<IJsonLdContextManager, JsonLdContextManager>()
                                  .Configure<JsonLdContextManagerOptions>(opts => { opts.DefaultContextUrl = Contexts.Default.Url; })
                                  .AddSingleton<IJsonLdProcessor, JsonLdProcessor>()

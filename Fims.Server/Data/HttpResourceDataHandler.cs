@@ -7,10 +7,10 @@ using Fims.Core.Model;
 
 namespace Fims.Server.Data
 {
-    public class HttpResourceDataHandler<T> : IHttpResourceDataHandler<T> where T : Resource
+    public class HttpResourceDataHandler : IHttpResourceDataHandler
     {
         /// <summary>
-        /// Instantiates a <see cref="HttpResourceDataHandler{T}"/>
+        /// Instantiates a <see cref="HttpResourceDataHandler"/>
         /// </summary>
         /// <param name="environment"></param>
         /// <param name="jsonLdResourceHelper"></param>
@@ -40,7 +40,7 @@ namespace Fims.Server.Data
         /// </summary>
         /// <param name="resourceDescriptor"></param>
         /// <returns></returns>
-        public async Task<T> Get(ResourceDescriptor resourceDescriptor)
+        public async Task<T> Get<T>(ResourceDescriptor resourceDescriptor) where T : Resource
         {
             var resp = await HttpClient.GetAsync(resourceDescriptor.Url);
 
@@ -49,7 +49,7 @@ namespace Fims.Server.Data
             return await resp.Content.ReadAsResourceAsync(
                        HttpMethod.Get,
                        resourceDescriptor.Url,
-                       async j => (T)(await JsonLdResourceHelper.GetResourceFromJson(j, typeof(T), Environment.PublicUrl)));
+                       async j => (T)await JsonLdResourceHelper.GetResourceFromJson(j, typeof(T), Environment.PublicUrl));
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Fims.Server.Data
         /// </summary>
         /// <param name="resourceDescriptor"></param>
         /// <returns></returns>
-        public virtual async Task<IEnumerable<T>> Query(ResourceDescriptor resourceDescriptor)
+        public virtual async Task<IEnumerable<T>> Query<T>(ResourceDescriptor resourceDescriptor) where T : Resource
         {
             var resp = await HttpClient.GetAsync(resourceDescriptor.Url);
 
@@ -75,10 +75,10 @@ namespace Fims.Server.Data
         /// <param name="resourceDescriptor"></param>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public virtual async Task<T> Create(ResourceDescriptor resourceDescriptor, T resource)
+        public virtual async Task<T> Create<T>(ResourceDescriptor resourceDescriptor, T resource) where T : Resource
         {
             var resp = await HttpClient.PostAsync(resourceDescriptor.Url,
-                                                  new JsonContent(JsonLdResourceHelper.GetJsonFromResource(resource, Environment.PublicUrl)));
+                                                  new JsonContent(JsonLdResourceHelper.GetJsonFromResource(resource, Environment.PublicUrl + "/context/default")));
 
             resp.EnsureSuccessStatusCode();
 
@@ -94,10 +94,10 @@ namespace Fims.Server.Data
         /// <param name="resourceDescriptor"></param>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public virtual async Task<T> Update(ResourceDescriptor resourceDescriptor, T resource)
+        public virtual async Task<T> Update<T>(ResourceDescriptor resourceDescriptor, T resource) where T : Resource
         {
             var resp = await HttpClient.PutAsync(resourceDescriptor.Url,
-                                                 new JsonContent(JsonLdResourceHelper.GetJsonFromResource(resource, Environment.PublicUrl)));
+                                                 new JsonContent(JsonLdResourceHelper.GetJsonFromResource(resource, Environment.PublicUrl + "/context/default")));
 
             resp.EnsureSuccessStatusCode();
 
@@ -108,11 +108,11 @@ namespace Fims.Server.Data
         }
 
         /// <summary>
-        /// Deletes a resource of type <see cref="T"/> by its ID
+        /// Deletes a resource by its ID
         /// </summary>
         /// <param name="resourceDescriptor"></param>
         /// <returns></returns>
-        public virtual async Task Delete(ResourceDescriptor resourceDescriptor)
+        public virtual async Task Delete<T>(ResourceDescriptor resourceDescriptor) where T : Resource
         {
             (await HttpClient.DeleteAsync(resourceDescriptor.Url)).EnsureSuccessStatusCode();
         }

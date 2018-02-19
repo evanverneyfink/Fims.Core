@@ -2,27 +2,68 @@
 
 namespace Fims.Core.Model
 {
-    public abstract class Job : JobStatusObject
+    public class Job : Resource
     {
-        protected Job()
+        public Job()
         {
         }
 
-        protected Job(string jobProfileId, JObject jobInput, AsyncEndpoint asyncEndpoint)
+        public Job(JToken jobProfile, JToken jobInput, JToken asyncEndpointToken)
         {
-            JobProfileId = jobProfileId;
+            JobProfile = jobProfile;
             JobInput = jobInput;
-            AsyncEndpoint = asyncEndpoint;
+            AsyncEndpointToken = asyncEndpointToken;
+
+            JobStatus = "New";
+            JobStatusReason = null;
+            JobProcess = null;
+            JobOutput = null;
         }
 
-        public string JobProfileId { get; set; }
+        public string JobStatus
+        {
+            get => GetString(nameof(JobStatus));
+            set => Set(nameof(JobStatus), value);
+        }
 
-        public JObject JobInput { get; set; }
+        public string JobStatusReason
+        {
+            get => GetString(nameof(JobStatusReason));
+            set => Set(nameof(JobStatusReason), value);
+        }
 
-        public AsyncEndpoint AsyncEndpoint { get; set; }
+        public JToken JobProfile
+        {
+            get => Get(nameof(JobProfile));
+            set => Set(nameof(JobProfile), value);
+        }
 
-        public string JobProcessId { get; set; }
-        
-        public JObject JobOutput { get; set; }
+        public JobProfile Profile => JobProfile.ToResource<JobProfile>();
+
+        public JToken AsyncEndpointToken
+        {
+            get => Get(nameof(AsyncEndpoint));
+            set => Set(nameof(AsyncEndpoint), value);
+        }
+
+        public AsyncEndpoint AsyncEndpoint => JobProfile.ToResource<AsyncEndpoint>();
+
+        public string JobProcess
+        {
+            get => GetString(nameof(JobProcess));
+            set => Set(nameof(JobProcess), value);
+        }
+
+        public JToken JobInput
+        {
+            get => Get(nameof(JobInput));
+            set => Set(nameof(JobInput), value);
+        }
+
+        public JToken JobOutput
+        {
+            get => Get(nameof(JobOutput));
+            set => Set(nameof(JobOutput), value);
+        }
     }
 }

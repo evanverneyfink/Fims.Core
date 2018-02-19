@@ -76,6 +76,17 @@ namespace Fims.Server.Api
         }
 
         /// <summary>
+        /// Gets the type name for a resource type
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public string GetResourceTypeName(Type type)
+        {
+            // pluralize the type name
+            return Pluralizer.Pluralize(type.Name);
+        }
+
+        /// <summary>
         /// Checks if a property is a child collection of a given type
         /// </summary>
         /// <param name="p"></param>

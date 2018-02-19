@@ -10,7 +10,7 @@ namespace JsonLD.Core
 
         private bool compactArrays = true;
 
-        public DocumentLoader documentLoader = new DocumentLoader();
+        public IDocumentLoader documentLoader = new DocumentLoader();
 
         private bool? embed;
 

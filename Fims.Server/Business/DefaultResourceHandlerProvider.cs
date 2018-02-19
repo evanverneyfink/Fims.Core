@@ -2,7 +2,7 @@
 
 namespace Fims.Server.Business
 {
-    public class DefaultResourceHandlerProvider : IResourceHandlerProvider
+    internal class DefaultResourceHandlerProvider : IResourceHandlerProvider
     {
         /// <summary>
         /// Instantiates a <see cref="DefaultResourceHandlerProvider"/>
@@ -25,7 +25,7 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public bool IsSupportedResourceType(Type type)
         {
-            return true;
+            return HandlerRegistry.IsSupported(type);
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public IResourceHandler CreateResourceHandler(ResourceDescriptor resourceDescriptor)
         {
-            return HandlerRegistry.RegisteredHandlers.ContainsKey(resourceDescriptor.Type)
-                       ? HandlerRegistry.RegisteredHandlers[resourceDescriptor.Type]()
-                       : (HandlerRegistry.GetDefaultHandler?.Invoke(resourceDescriptor.Type) ??
+            return HandlerRegistry.FactoryOverrides.ContainsKey(resourceDescriptor.Type)
+                       ? HandlerRegistry.FactoryOverrides[resourceDescriptor.Type]()
+                       : (HandlerRegistry.DefaultFactory?.Invoke(resourceDescriptor.Type) ??
                           throw new Exception($"Resource handler for type {resourceDescriptor.Type} not registered."));
         }
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Fims.Core.Model;
 
 namespace Fims.Server.Business
 {
@@ -28,11 +29,18 @@ namespace Fims.Server.Business
         /// <typeparam name="T"></typeparam>
         /// <param name="createHandler"></param>
         /// <returns></returns>
-        public ResourceHandlerRegistryOptions Register<T>(Func<IResourceHandler> createHandler) where T : IResourceHandler
+        public ResourceHandlerRegistryOptions Register<T>(Func<IResourceHandler> createHandler = null) where T : Resource
         {
-            RegisteredHandlers[typeof(T)] = createHandler;
+            SupportedTypes.Add(typeof(T));
+            if (createHandler != null)
+                RegisteredHandlers[typeof(T)] = createHandler;
             return this;
         }
+
+        /// <summary>
+        /// Gets the collection of supported types
+        /// </summary>
+        internal List<Type> SupportedTypes { get; } = new List<Type>();
 
         /// <summary>
         /// Gets the registered resource handlers

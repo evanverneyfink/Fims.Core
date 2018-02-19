@@ -18,7 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Fims.Aws\Fims.Aws.csproj" />
     <ProjectReference Include="..\Fims.Core\Fims.Core.csproj" />
-    <ProjectReference Include="..\Fims.Server2\Fims.Server.csproj" />
+    <ProjectReference Include="..\Fims.Server\Fims.Server.csproj" />
     <ProjectReference Include="..\JsonLd\JsonLd.csproj" />
     <ProjectReference Include="..\Pluralize.NET\Pluralize.NET.csproj" />
   </ItemGroup>

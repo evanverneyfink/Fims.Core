@@ -22,11 +22,18 @@ namespace Fims.Server.Business
         /// <summary>
         /// Gets the registered resource handlers
         /// </summary>
-        public IDictionary<Type, Func<IResourceHandler>> RegisteredHandlers => Options.RegisteredHandlers;
+        public IDictionary<Type, Func<IResourceHandler>> FactoryOverrides => Options.RegisteredHandlers;
 
         /// <summary>
         /// Delegate for getting the default hander
         /// </summary>
-        public Func<Type, IResourceHandler> GetDefaultHandler => Options.GetDefaultHandler;
+        public Func<Type, IResourceHandler> DefaultFactory => Options.GetDefaultHandler;
+
+        /// <summary>
+        /// Checks if a resource type is supported
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public bool IsSupported(Type type) => Options.SupportedTypes.Contains(type);
     }
 }

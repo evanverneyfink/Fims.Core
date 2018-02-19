@@ -190,8 +190,7 @@ namespace JsonLD.Core
                         }
 
                         var remoteContext = rd.document;
-                        if (!(remoteContext is JObject) || !((JObject)remoteContext
-                                                            ).ContainsKey("@context"))
+                        if (!(remoteContext is JObject) || !((JObject)remoteContext).ContainsKey("@context"))
                             throw new JsonLdError(JsonLdError.Error.InvalidRemoteContext, eachContext);
                         eachContext = ((JObject)remoteContext)["@context"];
 

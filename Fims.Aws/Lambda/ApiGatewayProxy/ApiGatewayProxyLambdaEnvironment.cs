@@ -32,13 +32,31 @@ namespace Fims.Aws.Lambda.ApiGatewayProxy
         /// <summary>
         /// Gets the root path of the url
         /// </summary>
-        public string RootPath => Environment.GetEnvironmentVariables().Contains(nameof(RootPath))
-                                      ? (string)Environment.GetEnvironmentVariables()[nameof(RootPath)]
-                                      : string.Empty;
+        public string RootPath => GetEnvironmentVariable(nameof(RootPath));
 
         /// <summary>
         /// Gets the base public url for the server
         /// </summary>
         public string PublicUrl => StageVariables.ContainsKey(nameof(PublicUrl)) ? StageVariables[nameof(PublicUrl)] : null;
+
+        /// <summary>
+        /// Gets the name of this service
+        /// </summary>
+        public string ServiceName => GetEnvironmentVariable(nameof(ServiceName));
+
+        /// <summary>
+        /// Gets the url for the service registry
+        /// </summary>
+        public string ServiceRegistryUrl => GetEnvironmentVariable(nameof(ServiceRegistryUrl));
+
+        /// <summary>
+        /// Gets an environment variable
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private string GetEnvironmentVariable(string key) =>
+            Environment.GetEnvironmentVariables().Contains(key)
+                ? (string)Environment.GetEnvironmentVariables()[key]
+                : string.Empty;
     }
 }

@@ -50,9 +50,9 @@ namespace Fims.Core.JsonLd
         /// Renders a resource to JSON using the provided JSON LD context
         /// </summary>
         /// <param name="resource"></param>
-        /// <param name="contextUrl"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        public async Task<JToken> GetJsonFromResource(Resource resource, string contextUrl)
+        public async Task<JToken> GetJsonFromResource(Resource resource, JToken context)
         {
             if (resource == null)
                 return null;
@@ -61,11 +61,11 @@ namespace Fims.Core.JsonLd
             var jObj = JObject.FromObject(resource);
 
             // check for specified context in request
-            if (contextUrl == null)
+            if (context == null)
                 return jObj;
 
             // process JSON with context and return
-            return await JsonLdProcessor.Compact(jObj, contextUrl);
+            return await JsonLdProcessor.Compact(jObj, context);
         }
     }
 }

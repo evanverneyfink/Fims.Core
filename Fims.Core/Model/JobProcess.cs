@@ -1,26 +1,73 @@
 ﻿using System;
+using Newtonsoft.Json.Linq;
 
 namespace Fims.Core.Model
 {
-    public class JobProcess : JobStatusObject
+    public class JobProcess : Resource
     {
         public JobProcess()
         {
         }
 
-        public JobProcess(string jobId)
+        public JobProcess(JToken job)
+            : this()
         {
-            JobId = jobId;
+            JobToken = job;
+
+            JobAssignmentToken = null;
+            JobProcessStatus = "New";
+            JobProcessStatusReason = null;
+            JobStart = null;
+            JobDuration = null;
+            JobEnd = null;
         }
 
-        public string JobId { get; set; }
+        public JToken JobToken
+        {
+            get => Get(nameof(Job));
+            set => Set(nameof(Job), value);
+        }
 
-        public string JobAssignmentId { get; set; }
-    
-        public DateTime? JobStart { get; set; }
+        public Job Job => JobToken.ToResource<Job>();
 
-        public TimeSpan? JobDuration { get; set; }
+        public JToken JobAssignmentToken
+        {
+            get => Get(nameof(JobAssignmentToken));
+            set => Set(nameof(JobAssignmentToken), value);
+        }
 
-        public DateTime? JobEnd { get; set; }
+        public JobAssignment JobAssignment => JobAssignmentToken.ToResource<JobAssignment>();
+
+        public JToken JobProcessStatus
+        {
+            get => Get(nameof(JobProcessStatus));
+            set => Set(nameof(JobProcessStatus), value);
+        }
+
+        public JobProcessStatus Status => JobProcessStatus.ToResource<JobProcessStatus>();
+
+        public string JobProcessStatusReason
+        {
+            get => GetString(nameof(JobProcessStatusReason));
+            set => Set(nameof(JobProcessStatusReason), value);
+        }
+
+        public DateTime? JobStart
+        {
+            get => Get<DateTime>(nameof(JobStart));
+            set => Set(nameof(JobStart), value);
+        }
+
+        public TimeSpan? JobDuration
+        {
+            get => Get<TimeSpan>(nameof(JobDuration));
+            set => Set(nameof(JobDuration), value);
+        }
+
+        public DateTime? JobEnd
+        {
+            get => Get<DateTime>(nameof(JobEnd));
+            set => Set(nameof(JobEnd), value);
+        }
     }
 }

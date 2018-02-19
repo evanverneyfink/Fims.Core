@@ -20,8 +20,8 @@ namespace Fims.Core.JsonLd
         /// Renders a resource to JSON using the provided JSON LD context
         /// </summary>
         /// <param name="resource"></param>
-        /// <param name="contextUrl"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        Task<JToken> GetJsonFromResource(Resource resource, string contextUrl);
+        Task<JToken> GetJsonFromResource(Resource resource, JToken context);
     }
 }

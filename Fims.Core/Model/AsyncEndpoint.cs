@@ -6,14 +6,22 @@
         {
         }
 
-        public AsyncEndpoint(string successEndpoint, string failureEndpoint)
+        public AsyncEndpoint(string asyncSuccess, string asyncFailure)
         {
-            SuccessEndpoint = successEndpoint;
-            FailureEndpoint = failureEndpoint;
+            AsyncSuccess = asyncSuccess;
+            AsyncFailure = asyncFailure;
         }
 
-        public string SuccessEndpoint { get; set; }
+        public string AsyncSuccess
+        {
+            get => GetString(nameof(AsyncSuccess));
+            set => Set(nameof(AsyncSuccess), value);
+        }
 
-        public string FailureEndpoint { get; set; }
+        public string AsyncFailure
+        {
+            get => GetString(nameof(AsyncFailure));
+            set => Set(nameof(AsyncFailure), value);
+        }
     }
 }

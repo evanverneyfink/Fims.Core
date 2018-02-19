@@ -13,7 +13,7 @@ namespace Fims.Aws.DynamoDb
         public static IServiceCollection AddDynamoDbFimsRepository(this IServiceCollection serviceCollection)
         {
             return serviceCollection.AddSingleton<IDynamoDbTableConfigProvider, DefaultDynamoDbTableConfigProvider>()
-                                    .AddScoped(typeof(IRepository<>), typeof(DynamoDbRepository<>));
+                                    .AddScoped(typeof(IRepository), typeof(DynamoDbRepository));
         }
     }
 }

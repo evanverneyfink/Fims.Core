@@ -35,7 +35,7 @@ namespace Fims.Core.JsonLd
 
             // if we found it in the cache, use that; otherwise, use base to get over HTTP
             if (context != null)
-                return new RemoteDocument(url, context);
+                return new RemoteDocument(url, new JObject {["@context"] = context});
 
             // load context over HTTP
             var doc = await base.LoadDocumentAsync(url);

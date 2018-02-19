@@ -14,7 +14,7 @@ namespace Fims.Core.JsonLd
         /// <param name="cacheOptions"></param>
         public JsonLdContextManager(IOptions<JsonLdContextManagerOptions> cacheOptions)
         {
-            Options = cacheOptions.Value ?? new JsonLdContextManagerOptions();
+            Options = cacheOptions?.Value ?? new JsonLdContextManagerOptions();
         }
 
         /// <summary>

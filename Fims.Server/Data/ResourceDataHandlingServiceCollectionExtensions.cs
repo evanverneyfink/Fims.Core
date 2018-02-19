@@ -12,9 +12,9 @@ namespace Fims.Server.Data
         public static IServiceCollection AddFimsResourceDataHandling(this IServiceCollection serviceCollection)
         {
             return serviceCollection
-                   .AddScoped(typeof(IRepositoryResourceDataHandler<>), typeof(RepositoryResourceDataHandler<>))
-                   .AddScoped(typeof(IHttpResourceDataHandler<>), typeof(HttpResourceDataHandler<>))
-                   .AddScoped(typeof(IResourceDataHandler<>), typeof(ResourceDataHandler<>));
+                   .AddScoped(typeof(IRepositoryResourceDataHandler), typeof(RepositoryResourceDataHandler))
+                   .AddScoped(typeof(IHttpResourceDataHandler), typeof(HttpResourceDataHandler))
+                   .AddScoped(typeof(IResourceDataHandler), typeof(ResourceDataHandler));
         }
     }
 }

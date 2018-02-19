@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Fims.Server2\Fims.Server.csproj" />
+    <ProjectReference Include="..\Fims.Server\Fims.Server.csproj" />
   </ItemGroup>
 
 </Project>

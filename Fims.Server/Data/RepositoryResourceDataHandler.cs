@@ -4,13 +4,13 @@ using Fims.Core.Model;
 
 namespace Fims.Server.Data
 {
-    public class RepositoryResourceDataHandler<T> : IRepositoryResourceDataHandler<T> where T : Resource
+    public class RepositoryResourceDataHandler : IRepositoryResourceDataHandler
     {
         /// <summary>
-        /// Instantiates a <see cref="RepositoryResourceDataHandler{T}"/>
+        /// Instantiates a <see cref="RepositoryResourceDataHandler"/>
         /// </summary>
         /// <param name="repository"></param>
-        public RepositoryResourceDataHandler(IRepository<T> repository)
+        public RepositoryResourceDataHandler(IRepository repository)
         {
             Repository = repository;
         }
@@ -18,16 +18,16 @@ namespace Fims.Server.Data
         /// <summary>
         /// Gets the repository
         /// </summary>
-        private IRepository<T> Repository { get; }
+        private IRepository Repository { get; }
 
         /// <summary>
         /// Gets a resource of type <see cref="T"/> by its ID
         /// </summary>
         /// <param name="resourceDescriptor"></param>
         /// <returns></returns>
-        public Task<T> Get(ResourceDescriptor resourceDescriptor)
+        public Task<T> Get<T>(ResourceDescriptor resourceDescriptor) where T : Resource
         {
-            return Repository.Get(resourceDescriptor.Id);
+            return Repository.Get<T>(resourceDescriptor.Id);
         }
 
         /// <summary>
@@ -35,9 +35,9 @@ namespace Fims.Server.Data
         /// </summary>
         /// <param name="resourceDescriptor"></param>
         /// <returns></returns>
-        public Task<IEnumerable<T>> Query(ResourceDescriptor resourceDescriptor)
+        public Task<IEnumerable<T>> Query<T>(ResourceDescriptor resourceDescriptor) where T : Resource
         {
-            return Repository.Query(resourceDescriptor.Parameters);
+            return Repository.Query<T>(resourceDescriptor.Parameters);
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Fims.Server.Data
         /// <param name="resourceDescriptor"></param>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public Task<T> Create(ResourceDescriptor resourceDescriptor, T resource)
+        public Task<T> Create<T>(ResourceDescriptor resourceDescriptor, T resource) where T : Resource
         {
             return Repository.Create(resource);
         }
@@ -57,19 +57,19 @@ namespace Fims.Server.Data
         /// <param name="resourceDescriptor"></param>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public Task<T> Update(ResourceDescriptor resourceDescriptor, T resource)
+        public Task<T> Update<T>(ResourceDescriptor resourceDescriptor, T resource) where T : Resource
         {
             return Repository.Update(resource);
         }
 
         /// <summary>
-        /// Deletes a resource of type <see cref="T"/> by its ID
+        /// Deletes a resource by its ID
         /// </summary>
         /// <param name="resourceDescriptor"></param>
         /// <returns></returns>
-        public Task Delete(ResourceDescriptor resourceDescriptor)
+        public Task Delete<T>(ResourceDescriptor resourceDescriptor) where T : Resource
         {
-            return Repository.Delete(resourceDescriptor.Id);
+            return Repository.Delete<T>(resourceDescriptor.Id);
         }
     }
 }

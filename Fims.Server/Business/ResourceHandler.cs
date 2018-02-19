@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Fims.Core.Model;
+using Fims.Server.Api;
 using Fims.Server.Data;
 
 namespace Fims.Server.Business
@@ -11,22 +12,30 @@ namespace Fims.Server.Business
         /// <summary>
         /// Instantiates a <see cref="ResourceHandler{T}"/>
         /// </summary>
+        /// <param name="logger"></param>
         /// <param name="dataHandler"></param>
-        public ResourceHandler(ILogger logger, IResourceDataHandler<T> dataHandler)
+        /// <param name="resourceUrlHelper"></param>
+        public ResourceHandler(ILogger logger, IResourceDataHandler dataHandler, IResourceUrlHelper resourceUrlHelper)
         {
             Logger = logger;
             DataHandler = dataHandler;
+            ResourceUrlHelper = resourceUrlHelper;
         }
 
         /// <summary>
         /// Gets the logger
         /// </summary>
-        private ILogger Logger { get; }
+        protected ILogger Logger { get; }
 
         /// <summary>
         /// Gets the repository
         /// </summary>
-        private IResourceDataHandler<T> DataHandler { get; }
+        protected IResourceDataHandler DataHandler { get; }
+
+        /// <summary>
+        /// Gets the resource url helper
+        /// </summary>
+        protected IResourceUrlHelper ResourceUrlHelper { get; }
 
         #region Explicit IResourceHandler Implementation
 
@@ -37,8 +46,6 @@ namespace Fims.Server.Business
         /// <returns></returns>
         async Task<Resource> IResourceHandler.Get(ResourceDescriptor resourceDescriptor)
         {
-            Logger.Debug("IResourceHandler.Get");
-
             return await Get(resourceDescriptor);
         }
 
@@ -93,7 +100,7 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public virtual async Task<T> Get(ResourceDescriptor resourceDescriptor)
         {
-            return await DataHandler.Get(resourceDescriptor);
+            return await DataHandler.Get<T>(resourceDescriptor);
         }
 
         /// <summary>
@@ -103,7 +110,7 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public virtual async Task<IEnumerable<T>> Query(ResourceDescriptor resourceDescriptor)
         {
-            return await DataHandler.Query(resourceDescriptor);
+            return await DataHandler.Query<T>(resourceDescriptor);
         }
 
         /// <summary>
@@ -114,16 +121,20 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public virtual async Task<T> Create(ResourceDescriptor resourceDescriptor, T resource)
         {
-            resource.Id = resourceDescriptor.Id = Guid.NewGuid().ToString();
+            // set new ID on the resource descriptor
+            resourceDescriptor.Id = Guid.NewGuid().ToString();
 
-            if (!resource.Created.HasValue)
-                resource.Created = DateTime.UtcNow;
-            if (!resource.Modified.HasValue)
-                resource.Modified = DateTime.UtcNow;
+            // set url as the ID of the resource
+            resource.Id = ResourceUrlHelper.GetUrlPath(resourceDescriptor);
 
+            // set created/modified dates and times
+            if (!resource.DateCreated.HasValue)
+                resource.DateCreated = DateTime.UtcNow;
+            if (!resource.DateModified.HasValue)
+                resource.DateModified = DateTime.UtcNow;
+
+            // call data layer to store the object
             resource = await DataHandler.Create(resourceDescriptor, resource);
-
-            await OnCreated(resourceDescriptor, resource);
 
             return resource;
         }
@@ -136,11 +147,11 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public virtual async Task<T> Update(ResourceDescriptor resourceDescriptor, T resource)
         {
-            resource.Modified = DateTime.UtcNow;
-
+            // set the modified date to now
+            resource.DateModified = DateTime.UtcNow;
+            
+            // call data layer to update the object
             resource = await DataHandler.Update(resourceDescriptor, resource);
-
-            await OnUpdated(resourceDescriptor, resource);
 
             return resource;
         }
@@ -152,38 +163,8 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public virtual async Task Delete(ResourceDescriptor resourceDescriptor)
         {
-            await DataHandler.Delete(resourceDescriptor);
-
-            await OnDeleted(resourceDescriptor);
-        }
-
-        /// <summary>
-        /// Handles successful creation of a resource
-        /// </summary>
-        /// <param name="resourceDescriptor"></param>
-        /// <param name="resource"></param>
-        protected virtual Task<T> OnCreated(ResourceDescriptor resourceDescriptor, T resource)
-        {
-            return Task.FromResult(resource);
-        }
-
-        /// <summary>
-        /// Handle update of a resource
-        /// </summary>
-        /// <param name="resourceDescriptor"></param>
-        /// <param name="resource"></param>
-        protected virtual Task<T> OnUpdated(ResourceDescriptor resourceDescriptor, T resource)
-        {
-            return Task.FromResult(resource);
-        }
-
-        /// <summary>
-        /// Handle deletion of a resource
-        /// </summary>
-        /// <param name="resourceDescriptor"></param>
-        protected virtual Task OnDeleted(ResourceDescriptor resourceDescriptor)
-        {
-            return Task.CompletedTask;
+            // call data layer to delete the resource
+            await DataHandler.Delete<T>(resourceDescriptor);
         }
     }
 }

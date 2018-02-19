@@ -7,7 +7,7 @@ using JsonLD.Util;
 
 namespace JsonLD.Core
 {
-    public class DocumentLoader
+    public class DocumentLoader : IDocumentLoader
     {
         /// <summary>
         /// Instantiates a <see cref="DocumentLoader"/>

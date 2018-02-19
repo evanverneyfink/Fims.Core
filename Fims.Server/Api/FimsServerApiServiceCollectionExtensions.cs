@@ -9,7 +9,7 @@ namespace Fims.Server.Api
             return
                 serviceCollection.AddSingleton<ILogger, ConsoleLogger>()
                                  .AddScoped<IUrlSegmentResourceMapper, DefaultUrlSegmentResourceMapper>()
-                                 .AddScoped<IResourceUrlParser, DefaultResourceUrlParser>()
+                                 .AddScoped<IResourceUrlHelper, DefaultResourceUrlHelper>()
                                  .AddScoped<IRequestHandler, DefaultRequestHandler>();
         }
     }
