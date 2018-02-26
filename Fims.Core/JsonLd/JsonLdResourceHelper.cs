@@ -28,22 +28,22 @@ namespace Fims.Core.JsonLd
         /// </summary>
         /// <param name="json"></param>
         /// <param name="type"></param>
-        /// <param name="contextBaseUrl"></param>
         /// <returns></returns>
-        public async Task<Resource> GetResourceFromJson(JToken json, Type type, string contextBaseUrl)
+        public async Task<Resource> GetResourceFromJson(JToken json, Type type)
         {
-            // use default context
-            var contextUrl = contextBaseUrl + "/context/default";
+            Console.WriteLine("Compacting JSON: {0}", json);
 
-            // ensure default url is mapped to default context
-            JsonLdContextManager.Set(contextUrl, JsonLdContextManager.GetDefault());
-            JsonLdContextManager.DefaultUrl = contextUrl;
+            // if there's not context on the object, use the default
+            if (json.Type == JTokenType.Object && json["@context"] == null)
+                json["@context"] = JsonLdContextManager.DefaultUrl;
 
             // process the request JSON
-            json = await JsonLdProcessor.Compact(json, contextUrl);
+            json = await JsonLdProcessor.Compact(json, JsonLdContextManager.GetDefault());
+
+            Console.WriteLine("Compacted JSON: {0}", json);
 
             // convert the JSON to a resource
-            return (Resource)json.ToObject(type);
+            return Resource.FromToken(json, type);
         }
 
         /// <summary>
@@ -57,15 +57,16 @@ namespace Fims.Core.JsonLd
             if (resource == null)
                 return null;
 
-            // create JSON obj
-            var jObj = JObject.FromObject(resource);
+            Console.WriteLine("GetJsonFromResource: Provided context {0}", context);
+            Console.WriteLine("GetJsonFromResource: Default context {0}", JsonLdContextManager.GetDefault());
+            
+            if (context == null || context.Type == JTokenType.String && string.IsNullOrWhiteSpace(context.Value<string>()))
+                context = JsonLdContextManager.GetDefault();
 
-            // check for specified context in request
-            if (context == null)
-                return jObj;
+            Console.WriteLine("GetJsonFromResource: Context {0}", context);
 
             // process JSON with context and return
-            return await JsonLdProcessor.Compact(jObj, context);
+            return await JsonLdProcessor.Compact(resource, context);
         }
     }
 }

@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
-using Fims.Server;
+using Fims.Core;
 
 namespace Fims.Aws.Lambda.ApiGatewayProxy
 {
-    public class ApiGatewayProxyLambdaEnvironment : IEnvironment
+    public class ApiGatewayProxyLambdaEnvironment : LambdaEnvironment
     {
         /// <summary>
         /// Instantiates an <see cref="ApiGatewayProxyLambdaEnvironment"/>
@@ -14,15 +13,10 @@ namespace Fims.Aws.Lambda.ApiGatewayProxy
         /// <param name="lambdaContext"></param>
         /// <param name="request"></param>
         public ApiGatewayProxyLambdaEnvironment(ILambdaContext lambdaContext, APIGatewayProxyRequest request)
+            : base(lambdaContext)
         {
-            LambdaContext = lambdaContext;
             StageVariables = request.StageVariables ?? new Dictionary<string, string>();
         }
-
-        /// <summary>
-        /// Gets the lambda context
-        /// </summary>
-        private ILambdaContext LambdaContext { get; }
         
         /// <summary>
         /// Gets the stage variables
@@ -30,33 +24,17 @@ namespace Fims.Aws.Lambda.ApiGatewayProxy
         private IDictionary<string, string> StageVariables { get; }
 
         /// <summary>
-        /// Gets the root path of the url
+        /// Gets a setting from the API Gateway proxy lambda environment
         /// </summary>
-        public string RootPath => GetEnvironmentVariable(nameof(RootPath));
-
-        /// <summary>
-        /// Gets the base public url for the server
-        /// </summary>
-        public string PublicUrl => StageVariables.ContainsKey(nameof(PublicUrl)) ? StageVariables[nameof(PublicUrl)] : null;
-
-        /// <summary>
-        /// Gets the name of this service
-        /// </summary>
-        public string ServiceName => GetEnvironmentVariable(nameof(ServiceName));
-
-        /// <summary>
-        /// Gets the url for the service registry
-        /// </summary>
-        public string ServiceRegistryUrl => GetEnvironmentVariable(nameof(ServiceRegistryUrl));
-
-        /// <summary>
-        /// Gets an environment variable
-        /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        private string GetEnvironmentVariable(string key) =>
-            Environment.GetEnvironmentVariables().Contains(key)
-                ? (string)Environment.GetEnvironmentVariables()[key]
-                : string.Empty;
+        public override T Get<T>(string key)
+        {
+            if (StageVariables.ContainsKey(key))
+                return StageVariables[key].Parse<T>();
+
+            return base.Get<T>(key);
+        }
     }
 }

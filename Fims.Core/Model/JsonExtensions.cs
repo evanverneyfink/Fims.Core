@@ -22,12 +22,12 @@ namespace Fims.Core.Model
             }
         }
 
-        public static T ToResource<T>(this JToken token) where T : FimsObject, new()
+        public static T ToResource<T>(this JToken token) where T : Resource, new()
         {
-            return FimsObject.FromToken<T>(token);
+            return Resource.FromToken<T>(token);
         }
 
-        public static ICollection<T> ToResourceCollection<T>(this JToken token) where T : FimsObject, new()
+        public static ICollection<T> ToResourceCollection<T>(this JToken token) where T : Resource, new()
         {
             if (token == null)
                 return null;
@@ -36,9 +36,9 @@ namespace Fims.Core.Model
             {
                 case JTokenType.String:
                 case JTokenType.Object:
-                    return new List<T> {FimsObject.FromToken<T>(token)};
+                    return new List<T> {Resource.FromToken<T>(token)};
                 case JTokenType.Array:
-                    return ((JArray)token).Select(FimsObject.FromToken<T>).ToList();
+                    return ((JArray)token).Select(Resource.FromToken<T>).ToList();
                 default:
                     return null;
             }

@@ -19,20 +19,23 @@ namespace Fims.Core.JsonLd
                 new Context(
                     new JObject
                     {
-                        ["dc"] = "http://purl.org/dc/elements/1.1/",
-                        ["@default"] = "urn:ebu:metadata-schema:ebuCore_2012",
-                        ["ebu"] = "http://ebu.org/nar-extensions/",
-                        ["ebucore"] = "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#",
-                        ["fims"] = "http://fims.tv#",
-                        ["owl"] = "http://www.w3.org/2002/07/owl#",
-                        ["rdf"] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-                        ["rdfs"] = "http://www.w3.org/2000/01/rdf-schema#",
-                        ["skos"] = "http://www.w3.org/2004/02/skos/core#",
-                        ["xsd"] = "http://www.w3.org/2001/XMLSchema#",
-                        ["xsi"] = "http://www.w3.org/2001/XMLSchema-instance",
+                        ["@context"] = new JObject
+                        {
+                            ["dc"] = "http://purl.org/dc/elements/1.1/",
+                            ["@default"] = "urn:ebu:metadata-schema:ebuCore_2012",
+                            ["ebu"] = "http://ebu.org/nar-extensions/",
+                            ["ebucore"] = "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#",
+                            ["fims"] = "http://fims.tv#",
+                            ["owl"] = "http://www.w3.org/2002/07/owl#",
+                            ["rdf"] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                            ["rdfs"] = "http://www.w3.org/2000/01/rdf-schema#",
+                            ["skos"] = "http://www.w3.org/2004/02/skos/core#",
+                            ["xsd"] = "http://www.w3.org/2001/XMLSchema#",
+                            ["xsi"] = "http://www.w3.org/2001/XMLSchema-instance",
 
-                        ["id"] = "@id",
-                        ["type"] = "@type"
+                            ["id"] = "@id",
+                            ["type"] = "@type"
+                        }
                     });
         }
 
@@ -50,200 +53,206 @@ namespace Fims.Core.JsonLd
                 new Context(
                     new JObject
                     {
-                        // Namespace abbreviations
-
-                        ["ebucore"] = "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#",
-                        ["fims"] = "http://fims.tv#",
-                        ["other"] = "http//other#",
-                        ["owl"] = "http://www.w3.org/2002/07/owl#",
-                        ["rdf"] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-                        ["rdfs"] = "http://www.w3.org/2000/01/rdf-schema#",
-                        ["xsd"] = "http://www.w3.org/2001/XMLSchema#",
-
-                        // General definition
-
-                        ["id"] = "@id",
-                        ["type"] = "@type",
-
-                        ["label"] = "rdfs:label",
-                        ["url"] = "xsd:anyURI",
-
-                        // EBUcore definitions
-
-                        ["dateCreated"] = "ebucore:dateCreated",
-                        ["dateModified"] = "ebucore:dateModified",
-
-                        // FIMS definitions
-
-                        ["Service"] = "fims:Service",
-                        ["hasResource"] = new JObject
+                        ["@context"] = new JObject
                         {
-                            ["@id"] = "fims:hasServiceResource",
-                            ["@type"] = "@id"
-                        },
-                        ["acceptsJobType"] = new JObject
-                        {
-                            ["@id"] = "fims:acceptsJobType",
-                            ["@type"] = "@id"
-                        },
-                        ["acceptsJobProfile"] = new JObject
-                        {
-                            ["@id"] = "fims:acceptsJobProfile",
-                            ["@type"] = "@id"
-                        },
 
-                        ["inputLocation"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobInputLocation",
-                            ["@type"] = "@id"
-                        },
-                        ["outputLocation"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobOutputLocation",
-                            ["@type"] = "@id"
-                        },
+                            // Namespace abbreviations
 
-                        ["ServiceResource"] = "fims:ServiceResource",
-                        ["resourceType"] = new JObject
-                        {
-                            ["@id"] = "fims:resourceType",
-                            ["@type"] = "@id"
-                        },
+                            ["ebucore"] = "http://www.ebu.ch/metadata/ontologies/ebucore/ebucore#",
+                            ["fims"] = "http://fims.tv#",
+                            ["other"] = "http//other#",
+                            ["owl"] = "http://www.w3.org/2002/07/owl#",
+                            ["rdf"] = "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+                            ["rdfs"] = "http://www.w3.org/2000/01/rdf-schema#",
+                            ["xsd"] = "http://www.w3.org/2001/XMLSchema#",
 
-                        ["JobProfile"] = "fims:JobProfile",
-                        ["hasInputParameter"] = new JObject
-                        {
-                            ["@id"] = "fims:hasInputParameter",
-                            ["@type"] = "@id"
-                        },
-                        ["hasOptionalInputParameter"] = new JObject
-                        {
-                            ["@id"] = "fims:hasOptionalInputParameter",
-                            ["@type"] = "@id"
-                        },
-                        ["hasOutputParameter"] = new JObject
-                        {
-                            ["@id"] = "fims:hasOutputParameter",
-                            ["@type"] = "@id"
-                        },
+                            // General definition
 
-                        ["JobParameter"] = "fims:JobParameter",
-                        ["jobProperty"] = new JObject
-                        {
-                            ["@id"] = "fims:jobProperty",
-                            ["@type"] = "@id"
-                        },
-                        ["parameterType"] = new JObject
-                        {
-                            ["@id"] = "fims:jobParameterType",
-                            ["@type"] = "@id"
-                        },
+                            ["id"] = "@id",
+                            ["type"] = "@type",
 
-                        ["Locator"] = "fims:Locator",
-                        ["httpEndpoint"] = new JObject
-                        {
-                            ["@id"] = "fims:httpEndpoint",
-                            ["@type"] = "xsd:anyURI"
-                        },
+                            ["label"] = "rdfs:label",
+                            ["url"] = "xsd:anyURI",
 
-                        ["awsS3Bucket"] = "fims:amazonWebServicesS3Bucket",
-                        ["awsS3Key"] = "fims:amazonWebServicesS3Key",
-                        ["azureBlobStorageAccount"] = "fims:microsoftAzureBlobStorageAccount",
-                        ["azureBlobStorageContainer"] = "fims:microsoftAzureBlobStorageContainer",
-                        ["azureBlobStorageObjectName"] = "fims:microsoftAzureBlobStorageObjectName",
-                        ["googleCloudStorageBucket"] = "fims:googleCloudStorageBucket",
-                        ["googleCloudStorageObjectName"] = "fims:googleCloudStorageObjectName",
-                        ["uncPath"] = "fims:uncPath",
+                            // EBUcore definitions
 
-                        ["AmeJob"] = "fims:AmeJob",
-                        ["CaptureJob"] = "fims:CaptureJob",
-                        ["QAJob"] = "fims:QAJob",
-                        ["TransformJob"] = "fims:TransformJob",
-                        ["TransferJob"] = "fims:TransferJob",
+                            ["dateCreated"] = "ebucore:dateCreated",
+                            ["dateModified"] = "ebucore:dateModified",
 
-                        ["jobProfile"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobProfile",
-                            ["@type"] = "@id"
-                        },
+                            // FIMS definitions
 
-                        ["jobStatus"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobStatus",
-                            ["@type"] = "fims:JobStatus"
-                        },
+                            ["Service"] = "fims:Service",
+                            ["hasResource"] = new JObject
+                            {
+                                ["@id"] = "fims:hasServiceResource",
+                                ["@type"] = "@id"
+                            },
 
-                        ["jobStatusReason"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobStatusReason",
-                            ["@type"] = "xsd:string"
-                        },
+                            ["acceptsJobType"] = new JObject
+                            {
+                                ["@id"] = "fims:acceptsJobType",
 
-                        ["jobProcess"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobProcess",
-                            ["@type"] = "@id"
-                        },
+                                ["@type"] = "@id"
+                            },
+                            ["acceptsJobProfile"] = new JObject
+                            {
+                                ["@id"] = "fims:acceptsJobProfile",
+                                ["@type"] = "@id"
+                            },
 
-                        ["jobInput"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobInput",
-                            ["@type"] = "@id"
-                        },
+                            ["inputLocation"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobInputLocation",
+                                ["@type"] = "@id"
+                            },
+                            ["outputLocation"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobOutputLocation",
+                                ["@type"] = "@id"
+                            },
 
-                        ["jobOutput"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobOutput",
-                            ["@type"] = "@id"
-                        },
+                            ["ServiceResource"] = "fims:ServiceResource",
+                            ["resourceType"] = new JObject
+                            {
+                                ["@id"] = "fims:resourceType",
+                                ["@type"] = "@id"
+                            },
 
-                        ["JobParameterBag"] = "fims:JobParameterBag",
+                            ["JobProfile"] = "fims:JobProfile",
+                            ["hasInputParameter"] = new JObject
+                            {
+                                ["@id"] = "fims:hasInputParameter",
+                                ["@type"] = "@id"
+                            },
+                            ["hasOptionalInputParameter"] = new JObject
+                            {
+                                ["@id"] = "fims:hasOptionalInputParameter",
+                                ["@type"] = "@id"
+                            },
+                            ["hasOutputParameter"] = new JObject
+                            {
+                                ["@id"] = "fims:hasOutputParameter",
+                                ["@type"] = "@id"
+                            },
 
-                        ["JobProcess"] = "fims:JobProcess",
+                            ["JobParameter"] = "fims:JobParameter",
+                            ["jobProperty"] = new JObject
+                            {
+                                ["@id"] = "fims:jobProperty",
+                                ["@type"] = "@id"
+                            },
+                            ["parameterType"] = new JObject
+                            {
+                                ["@id"] = "fims:jobParameterType",
+                                ["@type"] = "@id"
+                            },
 
-                        ["job"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJob",
-                            ["@type"] = "@id"
-                        },
+                            ["Locator"] = "fims:Locator",
+                            ["httpEndpoint"] = new JObject
+                            {
+                                ["@id"] = "fims:httpEndpoint",
+                                ["@type"] = "xsd:anyURI"
+                            },
 
-                        ["jobProcessStatus"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobProcessStatus",
-                            ["@type"] = "fims:JobProcessStatus"
-                        },
+                            ["awsS3Bucket"] = "fims:amazonWebServicesS3Bucket",
+                            ["awsS3Key"] = "fims:amazonWebServicesS3Key",
+                            ["azureBlobStorageAccount"] = "fims:microsoftAzureBlobStorageAccount",
+                            ["azureBlobStorageContainer"] = "fims:microsoftAzureBlobStorageContainer",
+                            ["azureBlobStorageObjectName"] = "fims:microsoftAzureBlobStorageObjectName",
+                            ["googleCloudStorageBucket"] = "fims:googleCloudStorageBucket",
+                            ["googleCloudStorageObjectName"] = "fims:googleCloudStorageObjectName",
+                            ["uncPath"] = "fims:uncPath",
 
-                        ["jobProcessStatusReason"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobProcessStatusReason",
-                            ["@type"] = "xsd:string"
-                        },
+                            ["AmeJob"] = "fims:AmeJob",
+                            ["CaptureJob"] = "fims:CaptureJob",
+                            ["QAJob"] = "fims:QAJob",
+                            ["TransformJob"] = "fims:TransformJob",
+                            ["TransferJob"] = "fims:TransferJob",
 
-                        ["jobAssignment"] = new JObject
-                        {
-                            ["@id"] = "fims:hasJobAssignment",
-                            ["@type"] = "@id"
-                        },
+                            ["jobProfile"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobProfile",
+                                ["@type"] = "@id"
+                            },
 
-                        ["JobAssignment"] = "fims:JobAssignment",
+                            ["jobStatus"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobStatus",
+                                ["@type"] = "fims:JobStatus"
+                            },
 
-                        ["asyncEndpoint"] = "fims:hasAsyncEndpoint",
-                        ["AsyncEndpoint"] = "fims:AsyncEndpoint",
+                            ["jobStatusReason"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobStatusReason",
+                                ["@type"] = "xsd:string"
+                            },
 
-                        ["asyncSuccess"] = new JObject
-                        {
-                            ["@id"] = "fims:asyncEndpointSuccess",
-                            ["@type"] = "xsd:anyURI"
-                        },
-                        ["asyncFailure"] = new JObject
-                        {
-                            ["@id"] = "fims:asyncEndpointFailure",
-                            ["@type"] = "xsd:anyURI"
-                        },
+                            ["jobProcess"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobProcess",
+                                ["@type"] = "@id"
+                            },
 
-                        // Default namespace for custom attributes
+                            ["jobInput"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobInput",
+                                ["@type"] = "@id"
+                            },
 
-                        ["@vocab"] = "http://other#"
+                            ["jobOutput"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobOutput",
+                                ["@type"] = "@id"
+                            },
+
+                            ["JobParameterBag"] = "fims:JobParameterBag",
+
+                            ["JobProcess"] = "fims:JobProcess",
+
+                            ["job"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJob",
+                                ["@type"] = "@id"
+                            },
+
+                            ["jobProcessStatus"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobProcessStatus",
+                                ["@type"] = "fims:JobProcessStatus"
+                            },
+
+                            ["jobProcessStatusReason"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobProcessStatusReason",
+                                ["@type"] = "xsd:string"
+                            },
+
+                            ["jobAssignment"] = new JObject
+                            {
+                                ["@id"] = "fims:hasJobAssignment",
+                                ["@type"] = "@id"
+                            },
+
+                            ["JobAssignment"] = "fims:JobAssignment",
+
+                            ["asyncEndpoint"] = "fims:hasAsyncEndpoint",
+                            ["AsyncEndpoint"] = "fims:AsyncEndpoint",
+
+                            ["asyncSuccess"] = new JObject
+                            {
+                                ["@id"] = "fims:asyncEndpointSuccess",
+                                ["@type"] = "xsd:anyURI"
+                            },
+                            ["asyncFailure"] = new JObject
+                            {
+                                ["@id"] = "fims:asyncEndpointFailure",
+                                ["@type"] = "xsd:anyURI"
+                            },
+
+                            // Default namespace for custom attributes
+
+                            ["@vocab"] = "http://other#"
+                        }
                     });
         }
     }

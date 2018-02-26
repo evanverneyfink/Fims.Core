@@ -49,7 +49,7 @@ namespace Fims.Server.Data
             return await resp.Content.ReadAsResourceAsync(
                        HttpMethod.Get,
                        resourceDescriptor.Url,
-                       async j => (T)await JsonLdResourceHelper.GetResourceFromJson(j, typeof(T), Environment.PublicUrl));
+                       async j => (T)await JsonLdResourceHelper.GetResourceFromJson(j, typeof(T)));
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Fims.Server.Data
             return await resp.Content.ReadAsResourceCollectionAsync(
                        HttpMethod.Get,
                        resourceDescriptor.Url,
-                       async j => (T)await JsonLdResourceHelper.GetResourceFromJson(j, typeof(T), Environment.PublicUrl));
+                       async j => (T)await JsonLdResourceHelper.GetResourceFromJson(j, typeof(T)));
         }
 
         /// <summary>
@@ -78,14 +78,14 @@ namespace Fims.Server.Data
         public virtual async Task<T> Create<T>(ResourceDescriptor resourceDescriptor, T resource) where T : Resource
         {
             var resp = await HttpClient.PostAsync(resourceDescriptor.Url,
-                                                  new JsonContent(JsonLdResourceHelper.GetJsonFromResource(resource, Environment.PublicUrl + "/context/default")));
+                                                  new JsonContent(JsonLdResourceHelper.GetJsonFromResource(resource, Environment.PublicUrl() + "/context/default")));
 
             resp.EnsureSuccessStatusCode();
 
             return await resp.Content.ReadAsResourceAsync(
                        HttpMethod.Post,
                        resourceDescriptor.Url,
-                       async j => (T)await JsonLdResourceHelper.GetResourceFromJson(j, typeof(T), Environment.PublicUrl));
+                       async j => (T)await JsonLdResourceHelper.GetResourceFromJson(j, typeof(T)));
         }
 
         /// <summary>
@@ -97,14 +97,14 @@ namespace Fims.Server.Data
         public virtual async Task<T> Update<T>(ResourceDescriptor resourceDescriptor, T resource) where T : Resource
         {
             var resp = await HttpClient.PutAsync(resourceDescriptor.Url,
-                                                 new JsonContent(JsonLdResourceHelper.GetJsonFromResource(resource, Environment.PublicUrl + "/context/default")));
+                                                 new JsonContent(JsonLdResourceHelper.GetJsonFromResource(resource, Environment.PublicUrl() + "/context/default")));
 
             resp.EnsureSuccessStatusCode();
 
             return await resp.Content.ReadAsResourceAsync(
                        HttpMethod.Put,
                        resourceDescriptor.Url,
-                       async j => (T)await JsonLdResourceHelper.GetResourceFromJson(j, typeof(T), Environment.PublicUrl));
+                       async j => (T)await JsonLdResourceHelper.GetResourceFromJson(j, typeof(T)));
         }
 
         /// <summary>

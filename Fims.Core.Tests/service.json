@@ -1,0 +1,33 @@
+{
+  "@context": "http://fims.tv/context/default",
+  "@type": "fims:Service", 
+  "label": "MediaInfo AME Service",
+  "hasResource": [
+    {
+      "resourceType": "fims:JobAssignment",
+      "httpEndpoint": "http://test/endpoint/JobAssignments"
+    }
+  ],
+  "acceptsJobType": "fims:AmeJob",
+  "acceptsJobProfile": [
+    {
+      "label": "ExtractTechnicalMetadata",
+      "hasInputParameter": [
+        {
+          "jobProperty": "fims:inputFile",
+          "parameterType": "fims:Locator"
+        },
+        {
+          "jobProperty": "fims:outputLocation",
+          "parameterType": "fims:Locator"
+        }
+      ],
+      "hasOutputParameter": [
+        {
+          "jobProperty": "fims:outputFile",
+          "parameterType": "fims:Locator"
+        }
+      ]
+    }
+  ]
+}

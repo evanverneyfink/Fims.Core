@@ -2,8 +2,12 @@
 
 namespace Fims.Core.Model
 {
-    public class JobParameterBag : FimsObject
+    public class JobParameterBag : Resource
     {
+        public JobParameterBag()
+        {
+        }
+
         public JobParameterBag(JObject parameters)
             : base(null, parameters)
         {

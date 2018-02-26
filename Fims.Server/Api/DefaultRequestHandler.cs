@@ -20,14 +20,14 @@ namespace Fims.Server.Api
         /// <param name="jsonLdResourceHelper"></param>
         /// <param name="environment"></param>
         /// <param name="resourceUrlHelper"></param>
-        /// <param name="resourceHandlerProvider"></param>
+        /// <param name="resourceHandlerRegistry"></param>
         /// <param name="requestContext"></param>
         public DefaultRequestHandler(ILogger logger,
                                      IJsonLdContextManager jsonLdContextManager,
                                      IJsonLdResourceHelper jsonLdResourceHelper,
                                      IEnvironment environment,
                                      IResourceUrlHelper resourceUrlHelper,
-                                     IResourceHandlerProvider resourceHandlerProvider,
+                                     IResourceHandlerRegistry resourceHandlerRegistry,
                                      IRequestContext requestContext)
         {
             Logger = logger;
@@ -35,7 +35,7 @@ namespace Fims.Server.Api
             JsonLdResourceHelper = jsonLdResourceHelper;
             Environment = environment;
             ResourceUrlHelper = resourceUrlHelper;
-            ResourceHandlerProvider = resourceHandlerProvider;
+            ResourceHandlerRegistry = resourceHandlerRegistry;
             RequestContext = requestContext;
         }
 
@@ -67,7 +67,7 @@ namespace Fims.Server.Api
         /// <summary>
         /// Gets the request processor
         /// </summary>
-        private IResourceHandlerProvider ResourceHandlerProvider { get; }
+        private IResourceHandlerRegistry ResourceHandlerRegistry { get; }
 
         /// <summary>
         /// Gets the request context
@@ -99,18 +99,34 @@ namespace Fims.Server.Api
             Logger.Debug("Parsing resource descriptor from path...");
 
             // if the resource type is not valid for this service, it's an unrecognized route
-            if (!ResourceHandlerProvider.IsSupportedResourceType(resourceDescriptor.RootType))
+            if (!ResourceHandlerRegistry.IsSupported(resourceDescriptor.RootType))
                 return RequestContext.CreateResponse(HttpStatusCode.NotFound);
 
             Logger.Debug("Successfully parsed resource descriptor for type {0} from path. Creating resource handler...", resourceDescriptor.Type.FullName);
 
+            Logger.Debug("ResourceHandlerProvider is {0}null.", ResourceHandlerRegistry != null ? "not " : "");
+
             // get handler for resource type
-            var resourceHandler = ResourceHandlerProvider.CreateResourceHandler(resourceDescriptor);
+            var resourceHandler = ResourceHandlerRegistry.Get(resourceDescriptor.Type);
+            if (resourceHandler == null)
+            {
+                Logger.Error("Failed to created resource handler for type '{0}' even though its a supported type for this API.", resourceDescriptor.Type);
+                return RequestContext.CreateResponse(HttpStatusCode.InternalServerError);
+            }
 
             Logger.Debug("Successfully created resource handler of type {0} for resource type {1}. Processing {2} request...",
                          resourceHandler.GetType().FullName,
                          resourceDescriptor.Type.Name,
                          RequestContext.Method);
+
+            // use default context
+            var contextUrl = Environment.PublicUrl() + Urls.DefaultJsonLdContext;
+
+            // ensure default url is mapped to default context
+            JsonLdContextManager.Set(contextUrl, JsonLdContextManager.GetDefault());
+            JsonLdContextManager.DefaultUrl = contextUrl;
+
+            Logger.Debug("Set default context to url {0}: {1}", JsonLdContextManager.DefaultUrl, JsonLdContextManager.GetDefault());
 
             IResponse response;
 
@@ -189,11 +205,19 @@ namespace Fims.Server.Api
         {
             try
             {
+                Logger.Info("Creating resource {0}...", resource.Id);
+                Logger.Debug("Resource JSON: {0}", resource);
+
                 // create the resource
                 var result = await resourceHandler.Create(resourceDescriptor, resource);
-                
+
+                Logger.Info("Successfully created resource {0}.", resource.Id);
+
+                var responseJson = await GetJsonFromResource(requestContext, result);
+                Logger.Debug("Response JSON: {0}", responseJson);
+
                 // return the new object rendered as JSON
-                return requestContext.CreateResponse().WithJsonBody(await GetJsonFromResource(requestContext, result));
+                return requestContext.CreateResponse().WithJsonBody(responseJson);
             }
             catch (Exception e)
             {
@@ -266,9 +290,11 @@ namespace Fims.Server.Api
         /// <returns></returns>
         private async Task<Resource> GetResourceFromJson(IRequestContext requestContext, ResourceDescriptor resourceDescriptor)
         {
-            return await JsonLdResourceHelper.GetResourceFromJson(JToken.Parse(await requestContext.ReadBodyAsText()),
-                                                                  resourceDescriptor.Type,
-                                                                  Environment.PublicUrl);
+            var inputJson = JToken.Parse(await requestContext.ReadBodyAsText());
+
+            Logger.Debug("Getting resource from input JSON: {0}", inputJson);
+
+            return await JsonLdResourceHelper.GetResourceFromJson(inputJson, resourceDescriptor.Type);
         }
 
         /// <summary>
@@ -280,7 +306,7 @@ namespace Fims.Server.Api
         private async Task<JToken> GetJsonFromResource(IRequestContext requestContext, Resource resource)
         {
             return await JsonLdResourceHelper.GetJsonFromResource(resource,
-                                                                  requestContext.QueryParameters.ContainsKey("context")
+                                                                  requestContext.QueryParameters != null && requestContext.QueryParameters.ContainsKey("context")
                                                                       ? requestContext.QueryParameters["context"]
                                                                       : null);
         }

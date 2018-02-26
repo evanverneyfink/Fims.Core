@@ -13,11 +13,13 @@ namespace Fims.Server.Business
         /// Instantiates a <see cref="ResourceHandler{T}"/>
         /// </summary>
         /// <param name="logger"></param>
+        /// <param name="environment"></param>
         /// <param name="dataHandler"></param>
         /// <param name="resourceUrlHelper"></param>
-        public ResourceHandler(ILogger logger, IResourceDataHandler dataHandler, IResourceUrlHelper resourceUrlHelper)
+        public ResourceHandler(ILogger logger, IEnvironment environment, IResourceDataHandler dataHandler, IResourceUrlHelper resourceUrlHelper)
         {
             Logger = logger;
+            Environment = environment;
             DataHandler = dataHandler;
             ResourceUrlHelper = resourceUrlHelper;
         }
@@ -26,6 +28,11 @@ namespace Fims.Server.Business
         /// Gets the logger
         /// </summary>
         protected ILogger Logger { get; }
+
+        /// <summary>
+        /// Gets the environment
+        /// </summary>
+        protected IEnvironment Environment { get; }
 
         /// <summary>
         /// Gets the repository
@@ -114,7 +121,7 @@ namespace Fims.Server.Business
         }
 
         /// <summary>
-        /// Gets a resource of type <see cref="T"/> by its ID
+        /// Creates a new resource of type <see cref="T"/>
         /// </summary>
         /// <param name="resourceDescriptor"></param>
         /// <param name="resource"></param>
@@ -125,7 +132,7 @@ namespace Fims.Server.Business
             resourceDescriptor.Id = Guid.NewGuid().ToString();
 
             // set url as the ID of the resource
-            resource.Id = ResourceUrlHelper.GetUrlPath(resourceDescriptor);
+            resource.Id = (Environment.PublicUrl()?.TrimEnd('/') ?? string.Empty) + ResourceUrlHelper.GetUrlPath(resourceDescriptor);
 
             // set created/modified dates and times
             if (!resource.DateCreated.HasValue)

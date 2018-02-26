@@ -12,9 +12,8 @@ namespace Fims.Core.JsonLd
         /// </summary>
         /// <param name="json"></param>
         /// <param name="type"></param>
-        /// <param name="contextBaseUrl"></param>
         /// <returns></returns>
-        Task<Resource> GetResourceFromJson(JToken json, Type type, string contextBaseUrl);
+        Task<Resource> GetResourceFromJson(JToken json, Type type);
 
         /// <summary>
         /// Renders a resource to JSON using the provided JSON LD context

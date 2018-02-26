@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Fims.Core.Model;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fims.Server.Business
 {
@@ -10,46 +10,82 @@ namespace Fims.Server.Business
         /// <summary>
         /// Instantiates a <see cref="ResourceHandlerRegistryOptions"/>
         /// </summary>
-        public ResourceHandlerRegistryOptions()
+        /// <param name="serviceCollection"></param>
+        public ResourceHandlerRegistryOptions(IServiceCollection serviceCollection)
         {
+            ServiceCollection = serviceCollection;
         }
 
         /// <summary>
-        /// Instantiates a <see cref="ResourceHandlerRegistryOptions"/>
+        /// Gets the service collection
         /// </summary>
-        /// <param name="handlers"></param>
-        public ResourceHandlerRegistryOptions(params ValueTuple<Type, Func<IResourceHandler>>[] handlers)
-        {
-            RegisteredHandlers = handlers.ToDictionary(x => x.Item1, x => x.Item2);
-        }
+        private IServiceCollection ServiceCollection { get; }
+
+        /// <summary>
+        /// Gets the collection of supported types
+        /// </summary>
+        internal List<Type> SupportedTypes { get; } = new List<Type>();
+        
+        /// <summary>
+        /// Delegate for getting the default hander
+        /// </summary>
+        internal Func<Type, IResourceHandler> CreateHandler { get; set; }
 
         /// <summary>
         /// Registers a resource handler
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="createHandler"></param>
+        /// <param name="serviceLifetime"></param>
         /// <returns></returns>
-        public ResourceHandlerRegistryOptions Register<T>(Func<IResourceHandler> createHandler = null) where T : Resource
+        public ResourceHandlerRegistryOptions Register<T>(Func<IServiceProvider, IResourceHandler<T>> createHandler = null,
+                                                          ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+            where T : Resource
         {
             SupportedTypes.Add(typeof(T));
             if (createHandler != null)
-                RegisteredHandlers[typeof(T)] = createHandler;
+                ServiceCollection.Add(new ServiceDescriptor(typeof(IResourceHandler<T>), createHandler, serviceLifetime));
             return this;
         }
 
         /// <summary>
-        /// Gets the collection of supported types
+        /// Registers a resource handler
         /// </summary>
-        internal List<Type> SupportedTypes { get; } = new List<Type>();
+        /// <typeparam name="TResource"></typeparam>
+        /// <typeparam name="THandler"></typeparam>
+        /// <param name="serviceLifetime"></param>
+        /// <returns></returns>
+        public ResourceHandlerRegistryOptions Register<TResource, THandler>(ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+            where TResource : Resource
+            where THandler : IResourceHandler<TResource>
+        {
+            SupportedTypes.Add(typeof(TResource));
+            ServiceCollection.Add(new ServiceDescriptor(typeof(IResourceHandler<TResource>), typeof(THandler), serviceLifetime));
+            return this;
+        }
 
         /// <summary>
-        /// Gets the registered resource handlers
+        /// Configures the options with the given service provider
         /// </summary>
-        internal IDictionary<Type, Func<IResourceHandler>> RegisteredHandlers { get; } = new Dictionary<Type, Func<IResourceHandler>>();
-        
-        /// <summary>
-        /// Delegate for getting the default hander
-        /// </summary>
-        internal Func<Type, IResourceHandler> GetDefaultHandler { get; set; }
+        /// <returns></returns>
+        internal ResourceHandlerRegistryOptions Configure(IServiceProvider svcProvider)
+        {
+            if (CreateHandler == null)
+                CreateHandler =
+                    t =>
+                    {
+                        var logger = svcProvider.GetService<ILogger>();
+                        logger.Info("Using default resource handler for resource type {0}", t.Name);
+
+                        var handler = (IResourceHandler)svcProvider.GetService(typeof(IResourceHandler<>).MakeGenericType(t));
+                        if (handler == null)
+                            logger.Warning(
+                                "Failed to create default handler for resource type {0}. Service provider was unable to resolve generic type.");
+
+                        return handler;
+                    };
+
+            return this;
+        }
     }
 }

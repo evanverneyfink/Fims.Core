@@ -60,10 +60,14 @@ namespace Fims.Core.Model
             set => Set(nameof(JobInput), value);
         }
 
+        public JobParameterBag InputParameterBag => JobInput.ToResource<JobParameterBag>();
+
         public JToken JobOutput
         {
             get => Get(nameof(JobOutput));
             set => Set(nameof(JobOutput), value);
         }
+
+        public JobParameterBag OutputParameterBag => JobOutput.ToResource<JobParameterBag>();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Fims.Core.JsonLd;
 using Fims.Core.Model;
@@ -234,6 +235,17 @@ namespace Fims.Core.Tests
             output["http://fims.tv#hasJobProcessStatus"].Should().NotBeNull();
             output["http://fims.tv#hasJobProcessStatus"]["@type"].Value<string>().Should().Be("http://fims.tv#JobProcessStatus");
             output["http://fims.tv#hasJobProcessStatus"]["@value"].Value<string>().Should().Be("New");
+        }
+
+        [TestMethod]
+        public async Task AllowsGettingAService()
+        {
+            var resource =
+                await JsonLdResourceHelper.GetResourceFromJson(JToken.Parse(File.ReadAllText("service.json")),
+                                                               typeof(Service));
+
+            resource.Should().NotBeNull();
+            resource.Should().BeOfType<Service>();
         }
     }
 }

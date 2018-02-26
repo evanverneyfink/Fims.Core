@@ -1,6 +1,6 @@
 ﻿namespace Fims.Core.Model
 {
-    public class IdResource : FimsObject
+    public class IdResource : Resource
     {
         public IdResource()
             : base("@id")

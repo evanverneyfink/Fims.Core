@@ -76,7 +76,7 @@ namespace Fims.Core.JsonLd
         /// <returns></returns>
         public Context GetDefault()
         {
-            return Get(Contexts.Default.Url);
+            return Get(DefaultUrl);
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace Fims.Core.JsonLd
         /// <param name="context"></param>
         public void SetDefault(Context context)
         {
-            Set(Contexts.Default.Url, context);
+            Set(DefaultUrl, context);
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Fims.Core.JsonLd
         public void Clean()
         {
             // find old contexts based on expiration
-            var expiredItems = ContextMappings.Where(c => c.Value.Item2.HasValue && c.Value.Item2 >= DateTime.UtcNow).ToList();
+            var expiredItems = ContextMappings.Where(c => c.Value.Item2.HasValue && c.Value.Item2 <= DateTime.UtcNow).ToList();
             if (!expiredItems.Any())
                 return;
 

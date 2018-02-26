@@ -40,7 +40,7 @@ namespace Fims.Server.Api
         public ResourceDescriptor GetResourceDescriptor(string path)
         {
             // get the root path from the environment
-            var root = $"/{Environment.RootPath ?? string.Empty}";
+            var root = $"/{Environment.RootPath() ?? string.Empty}";
             if (!path.StartsWith(root))
             {
                 Logger.Warning("Received request to path that does not match configured root. Root = {0}, Path = {1}", root, path);
@@ -48,7 +48,7 @@ namespace Fims.Server.Api
             }
 
             // remove root from path
-            path = path.Replace(root, string.Empty);
+            path = path.Substring(root.Length);
 
             if (string.IsNullOrWhiteSpace(path))
             {
@@ -95,7 +95,7 @@ namespace Fims.Server.Api
                 isId = !isId;
             }
 
-            cur.Url = Environment.PublicUrl.TrimEnd('/') + "/" + path.TrimStart('/');
+            cur.Url = Environment.PublicUrl().TrimEnd('/') + "/" + path.TrimStart('/');
 
             return cur;
         }

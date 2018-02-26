@@ -775,7 +775,7 @@ namespace JsonLD.Core
                         ctx["@context"] = new JObject();
                     }
 
-                    ResolveAsync(ctx, _cycles);
+                    await ResolveAsync(ctx, _cycles);
                     urls[url_1] = ctx["@context"];
                     count -= 1;
                     if (count == 0) FindContextUrls(input, urls, true);

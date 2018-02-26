@@ -1,5 +1,4 @@
-﻿using Fims.Core.Model;
-using Fims.Server;
+﻿using Fims.Server;
 
 namespace Fims.Aws.DynamoDb
 {
@@ -20,23 +19,29 @@ namespace Fims.Aws.DynamoDb
         private IEnvironment Environment { get; }
 
         /// <summary>
+        /// Gets flag indicating if tables should be created if they don't exist
+        /// </summary>
+        public bool CreateIfNotExists => false;
+
+        /// <summary>
         /// Gets the table name for a type
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public string GetTableName<T>()
-        {
-            return $"fims.{Environment.ServiceName}.{typeof(T).Name}";
-        }
+        public string GetTableName<T>() => Environment.TableName();
 
         /// <summary>
         /// Gets the name of the key for a table of type <see cref="T"/>
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public string GetTableKeyName<T>()
-        {
-            return nameof(Resource.Id);
-        }
+        public string GetTableHashKeyName<T>() => DynamoDbDefaults.ResourceTypeAttribute;
+
+        /// <summary>
+        /// Gets the name of the key for a table of type <see cref="T"/>
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public string GetTableRangeKeyName<T>() => DynamoDbDefaults.ResourceIdAttribute;
     }
 }

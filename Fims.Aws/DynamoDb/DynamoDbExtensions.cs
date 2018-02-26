@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Amazon.DynamoDBv2.DocumentModel;
-using Newtonsoft.Json;
+using Fims.Core.Model;
+using Newtonsoft.Json.Linq;
 
 namespace Fims.Aws.DynamoDb
 {
@@ -11,23 +13,56 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="document"></param>
-        /// <param name="settings"></param>
         /// <returns></returns>
-        public static T ToObject<T>(this Document document, JsonSerializerSettings settings = null)
+        public static T ToObject<T>(this Document document) where T : Resource
         {
-            return JsonConvert.DeserializeObject<T>(document.ToJson(), settings ?? JsonConvert.DefaultSettings?.Invoke());
+            var json = document.ToJson();
+            Console.WriteLine("[DynamoDbExtensions.ToObject] Document JSON = {0}", json);
+
+            var jObj = JObject.Parse(json).Unwrap();
+            Console.WriteLine("[DynamoDbExtensions.ToObject] Unwrapped JSON = {0}", jObj);
+
+            return (T)Resource.FromToken(jObj, typeof(T));
         }
 
         /// <summary>
         /// Converts an object to a <see cref="Document"/>
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="obj"></param>
-        /// <param name="settings"></param>
+        /// <param name="resource"></param>
         /// <returns></returns>
-        public static Document ToDocument<T>(this T obj, JsonSerializerSettings settings = null)
+        public static Document ToDocument<T>(this T resource) where T : Resource
         {
-            return Document.FromJson(JsonConvert.SerializeObject(obj, settings ?? JsonConvert.DefaultSettings?.Invoke()));
+            Console.WriteLine("[DynamoDbExtensions.ToDocument] Object JSON = {0}", resource);
+
+            var jObj = resource.Wrap();
+            Console.WriteLine("[DynamoDbExtensions.ToDocument] Wrapped JSON = {0}", jObj);
+
+            return Document.FromJson(jObj.ToString());
+        }
+
+        /// <summary>
+        /// Wraps a resource into a DynamoDB document
+        /// </summary>
+        /// <param name="resource"></param>
+        /// <returns></returns>
+        public static JObject Wrap(this Resource resource)
+        {
+            return new JObject
+            {
+                [DynamoDbDefaults.ResourceTypeAttribute] = resource.Type,
+                [DynamoDbDefaults.ResourceIdAttribute] = resource.Id,
+                [DynamoDbDefaults.ResourceAttribute] = resource
+            };
+        }
+
+        /// <summary>
+        /// Unwraps a resource from a DynamoDB document
+        /// </summary>
+        /// <param name="jObj"></param>
+        /// <returns></returns>
+        public static JObject Unwrap(this JObject jObj)
+        {
+            return jObj[DynamoDbDefaults.ResourceAttribute]?.Value<JObject>();
         }
 
         /// <summary>
@@ -35,9 +70,9 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <param name="filters"></param>
         /// <returns></returns>
-        public static ScanFilter ToScanFilter(this IDictionary<string, string> filters)
+        public static QueryFilter ToQueryFilter(this IDictionary<string, string> filters)
         {
-            var scanFilter = new ScanFilter();
+            var scanFilter = new QueryFilter();
 
             if (filters != null)
                 foreach (var kvp in filters)

@@ -27,7 +27,7 @@ namespace Fims.Server.Data
         /// <returns></returns>
         public Task<T> Get<T>(ResourceDescriptor resourceDescriptor) where T : Resource
         {
-            return Repository.Get<T>(resourceDescriptor.Id);
+            return Repository.Get<T>(resourceDescriptor.Url);
         }
 
         /// <summary>

@@ -48,43 +48,65 @@ namespace Fims.Aws.DynamoDb
         private async Task<DynamoDbTable> Table<T>()
         {
             var tableName = TableConfigProvider.GetTableName<T>();
-            var keyName = TableConfigProvider.GetTableKeyName<T>();
+            var hashKeyName = TableConfigProvider.GetTableHashKeyName<T>();
+            var rangeKeyName = TableConfigProvider.GetTableRangeKeyName<T>();
 
             Logger.Debug("Checking if table '{0}' exists in DynamoDB...", tableName);
 
-            if (!DynamoDbTable.TryLoadTable(DynamoDb, tableName, out var table))
+            try
             {
-                Logger.Info("Table '{0}' does not exist in DynamoDB. Creating it now...", tableName);
+                if (!DynamoDbTable.TryLoadTable(DynamoDb, tableName, out var table))
+                {
+                    if (!TableConfigProvider.CreateIfNotExists)
+                        throw new Exception($"Table {tableName} does not exist in DynamoDB.");
 
-                var createResp =
-                    await DynamoDb.CreateTableAsync(tableName,
-                                                    new List<KeySchemaElement>
-                                                    {
-                                                        new KeySchemaElement
+                    Logger.Info("Table '{0}' does not exist in DynamoDB. Creating it now...", tableName);
+
+                    var createResp =
+                        await DynamoDb.CreateTableAsync(tableName,
+                                                        new List<KeySchemaElement>
                                                         {
-                                                            AttributeName = keyName,
-                                                            KeyType = KeyType.HASH
-                                                        }
-                                                    },
-                                                    new List<AttributeDefinition>
-                                                    {
-                                                        new AttributeDefinition
+                                                            new KeySchemaElement
+                                                            {
+                                                                AttributeName = hashKeyName,
+                                                                KeyType = KeyType.HASH
+                                                            },
+                                                            new KeySchemaElement
+                                                            {
+                                                                AttributeName = rangeKeyName,
+                                                                KeyType = KeyType.RANGE
+                                                            }
+                                                        },
+                                                        new List<AttributeDefinition>
                                                         {
-                                                            AttributeName = keyName,
-                                                            AttributeType = ScalarAttributeType.S
-                                                        }
-                                                    },
-                                                    new ProvisionedThroughput(1, 1));
+                                                            new AttributeDefinition
+                                                            {
+                                                                AttributeName = hashKeyName,
+                                                                AttributeType = ScalarAttributeType.S
+                                                            },
+                                                            new AttributeDefinition
+                                                            {
+                                                                AttributeName = rangeKeyName,
+                                                                AttributeType = ScalarAttributeType.S
+                                                            }
+                                                        },
+                                                        new ProvisionedThroughput(1, 1));
 
-                if (createResp.HttpStatusCode != HttpStatusCode.OK)
-                    throw new Exception($"Failed to create table '{tableName}' in DynamoDB. Response code is {createResp.HttpStatusCode}.");
+                    if (createResp.HttpStatusCode != HttpStatusCode.OK)
+                        throw new Exception($"Failed to create table '{tableName}' in DynamoDB. Response code is {createResp.HttpStatusCode}.");
 
-                Logger.Info("Successfully created DynamoDB table '{0}'.", tableName);
+                    Logger.Info("Successfully created DynamoDB table '{0}'.", tableName);
 
-                table = DynamoDbTable.LoadTable(DynamoDb, tableName);
+                    table = DynamoDbTable.LoadTable(DynamoDb, tableName);
+                }
+
+                return table;
             }
-
-            return table;
+            catch (Exception exception)
+            {
+                Logger.Error($"An error occurred loading the DynamoDB table for type {typeof(T).Name}.", exception);
+                throw;
+            }
         }
 
         /// <summary>
@@ -94,7 +116,15 @@ namespace Fims.Aws.DynamoDb
         /// <returns></returns>
         public async Task<T> Get<T>(string id) where T : Resource
         {
-            return (await (await Table<T>()).GetItemAsync(new Primitive(id))).ToObject<T>();
+            var table = await Table<T>();
+            var hashKey = new Primitive($"{typeof(T).Name}");
+            var rangeKey = new Primitive(id);
+
+            Logger.Debug("Getting item with hash key {0} and range key {1} from table {2}...", hashKey, rangeKey, table.TableName);
+
+            var result = await table.GetItemAsync(hashKey, rangeKey);
+
+            return result?.ToObject<T>();
         }
 
         /// <summary>
@@ -104,7 +134,8 @@ namespace Fims.Aws.DynamoDb
         /// <returns></returns>
         public async Task<IEnumerable<T>> Query<T>(IDictionary<string, string> parameters) where T : Resource
         {
-            return (await (await Table<T>()).Scan(parameters.ToScanFilter()).GetRemainingAsync()).Select(d => d.ToObject<T>());
+            return (await (await Table<T>()).Query(new Primitive(typeof(T).Name), parameters.ToQueryFilter()).GetRemainingAsync())
+                .Select(d => d.ToObject<T>());
         }
 
         /// <summary>
@@ -112,9 +143,9 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public async Task<T> Create<T>(T resource) where T : Resource
+        public Task<T> Create<T>(T resource) where T : Resource
         {
-            return (await (await Table<T>()).PutItemAsync(resource.ToDocument())).ToObject<T>();
+            return CreateOrUpdate(resource);
         }
 
         /// <summary>
@@ -122,9 +153,9 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public async Task<T> Update<T>(T resource) where T : Resource
+        public Task<T> Update<T>(T resource) where T : Resource
         {
-            return (await (await Table<T>()).PutItemAsync(resource.ToDocument())).ToObject<T>();
+            return CreateOrUpdate(resource);
         }
 
         /// <summary>
@@ -135,6 +166,23 @@ namespace Fims.Aws.DynamoDb
         public async Task Delete<T>(string id) where T : Resource
         {
             await (await Table<T>()).DeleteItemAsync(new Primitive(id));
+        }
+
+        /// <summary>
+        /// Creates or updates record in DynamoDB
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="resource"></param>
+        /// <returns></returns>
+        private async Task<T> CreateOrUpdate<T>(T resource) where T : Resource
+        {
+            // we don't need to store the context
+            if (resource.Context != null)
+                resource.Remove("@context");
+
+            await (await Table<T>()).PutItemAsync(resource.ToDocument());
+
+            return await Get<T>(resource.Id);
         }
     }
 }

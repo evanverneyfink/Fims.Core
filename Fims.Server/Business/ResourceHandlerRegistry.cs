@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Fims.Server.Business
 {
@@ -20,20 +19,18 @@ namespace Fims.Server.Business
         private ResourceHandlerRegistryOptions Options { get; }
 
         /// <summary>
-        /// Gets the registered resource handlers
-        /// </summary>
-        public IDictionary<Type, Func<IResourceHandler>> FactoryOverrides => Options.RegisteredHandlers;
-
-        /// <summary>
-        /// Delegate for getting the default hander
-        /// </summary>
-        public Func<Type, IResourceHandler> DefaultFactory => Options.GetDefaultHandler;
-
-        /// <summary>
         /// Checks if a resource type is supported
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
         public bool IsSupported(Type type) => Options.SupportedTypes.Contains(type);
+
+        /// <summary>
+        /// Delegate for getting the default hander
+        /// </summary>
+        public IResourceHandler Get(Type type)
+        {
+            return Options.CreateHandler(type);
+        }
     }
 }
