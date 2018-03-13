@@ -3,7 +3,7 @@ using Amazon.Lambda.Core;
 using Fims.Aws.ServiceBuilding;
 using Fims.Core.Model;
 using Fims.Services.Jobs.WorkerFunctions;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Fims.Aws.Lambda
 {
@@ -21,9 +21,6 @@ namespace Fims.Aws.Lambda
             IFimsAwsWorkerService service = null;
             try
             {
-                // create job assignment from input
-                var jobAssignment = new JobAssignment(new JObject(input));
-
                 // build worker service
                 service =
                     FimsAwsServiceBuilder.Create<LambdaEnvironment>()
@@ -31,6 +28,9 @@ namespace Fims.Aws.Lambda
                                          .WithS3FileStorage()
                                          .With(lambdaContext)
                                          .BuildWorkerSevice<T>();
+
+                // use JSON serialization to convert input object to JobAssignment
+                var jobAssignment = service.ResourceSerializer.Deserialize<JobAssignment>(JsonConvert.SerializeObject(input));
 
                 // run worker
                 await service.Worker.Execute(jobAssignment);

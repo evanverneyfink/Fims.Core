@@ -6,11 +6,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Options" Version="2.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\JsonLd\JsonLd.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,6 @@
-﻿using System;
-using Fims.Aws.DynamoDb;
+﻿using Fims.Aws.DynamoDb;
 using Fims.Aws.S3;
-using Fims.Core;
+using Fims.Core.Serialization;
 using Fims.Server;
 using Fims.Server.Api;
 using Fims.Server.Business;
@@ -36,8 +35,7 @@ namespace Fims.Aws.ServiceBuilding
             where T : class, IEnvironment
         {
             return new FimsAwsServiceBuilder(
-                new ServiceCollection().AddFimsCore()
-                                       .AddFimsResourceDataHandling()
+                new ServiceCollection().AddFimsResourceDataHandling()
                                        .AddScoped<IEnvironment, T>());
         }
 
@@ -77,7 +75,6 @@ namespace Fims.Aws.ServiceBuilding
         /// Adds an object to the service collection
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="obj"></param>
         /// <returns></returns>
         public FimsAwsServiceBuilder With<T>() where T : class
         {
@@ -89,13 +86,15 @@ namespace Fims.Aws.ServiceBuilding
         /// Builds a resource API
         /// </summary>
         /// <returns></returns>
-        public IFimsAwsResourceApi BuildResourceApi<T>(Action<ResourceHandlerRegistryOptions> registerResourceHandling = null)
-            where T : class, IRequestContext
+        public IFimsAwsResourceApi BuildResourceApi<TRequestContext, TResourceRegistration>()
+            where TRequestContext : class, IRequestContext
+            where TResourceRegistration : IResourceHandlerRegistration, new()
         {
             ServiceCollection
-                .AddFimsResourceHandling(registerResourceHandling)
+                .AddSingleton<ILogger, ConsoleLogger>()
+                .AddFimsResourceHandling<TResourceRegistration>()
                 .AddFimsServerDefaultApi()
-                .AddScoped<IRequestContext, T>();
+                .AddScoped<IRequestContext, TRequestContext>();
 
             var serviceProvider = ServiceCollection.BuildServiceProvider();
 
@@ -117,7 +116,8 @@ namespace Fims.Aws.ServiceBuilding
 
             return new FimsAwsWorkerService(serviceProvider.CreateScope(),
                                             serviceProvider.GetRequiredService<ILogger>(),
-                                            serviceProvider.GetRequiredService<IWorker>());
+                                            serviceProvider.GetRequiredService<IWorker>(),
+                                            serviceProvider.GetRequiredService<IResourceSerializer>());
         }
     }
 }

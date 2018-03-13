@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Fims.Core;
 using Fims.Core.Model;
 
 namespace Fims.Server.Business

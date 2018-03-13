@@ -7,9 +7,8 @@ namespace Fims.Server.Api
         public static IServiceCollection AddFimsServerDefaultApi(this IServiceCollection serviceCollection)
         {
             return
-                serviceCollection.AddSingleton<ILogger, ConsoleLogger>()
-                                 .AddScoped<IUrlSegmentResourceMapper, DefaultUrlSegmentResourceMapper>()
-                                 .AddScoped<IResourceUrlHelper, DefaultResourceUrlHelper>()
+                serviceCollection.AddScoped<IUrlSegmentResourceMapper, DefaultUrlSegmentResourceMapper>()
+                                 .AddScoped<IResourceDescriptorHelper, DefaultResourceDescriptorHelper>()
                                  .AddScoped<IRequestHandler, DefaultRequestHandler>();
         }
     }

@@ -2,26 +2,8 @@
 {
     public class AsyncEndpoint : Resource
     {
-        public AsyncEndpoint()
-        {
-        }
+        public string AsyncSuccess { get; set; }
 
-        public AsyncEndpoint(string asyncSuccess, string asyncFailure)
-        {
-            AsyncSuccess = asyncSuccess;
-            AsyncFailure = asyncFailure;
-        }
-
-        public string AsyncSuccess
-        {
-            get => GetString(nameof(AsyncSuccess));
-            set => Set(nameof(AsyncSuccess), value);
-        }
-
-        public string AsyncFailure
-        {
-            get => GetString(nameof(AsyncFailure));
-            set => Set(nameof(AsyncFailure), value);
-        }
+        public string AsyncFailure { get; set; }
     }
 }

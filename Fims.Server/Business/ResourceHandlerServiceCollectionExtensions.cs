@@ -14,16 +14,25 @@ namespace Fims.Server.Business
         public static IServiceCollection AddFimsResourceHandling(this IServiceCollection serviceCollection,
                                                                  Action<ResourceHandlerRegistryOptions> configureOptions = null)
         {
-            serviceCollection.AddSingleton(svcProvider =>
-                             {
-                                 var opts = new ResourceHandlerRegistryOptions(serviceCollection);
-                                 configureOptions?.Invoke(opts);
-                                 return opts.Configure(svcProvider);
-                             })
-                             .AddSingleton<IResourceHandlerRegistry, ResourceHandlerRegistry>()
-                             .AddScoped(typeof(IResourceHandler<>), typeof(ResourceHandler<>));
+            return
+                serviceCollection.AddScoped(svcProvider =>
+                                 {
+                                     var opts = new ResourceHandlerRegistryOptions(serviceCollection);
+                                     configureOptions?.Invoke(opts);
+                                     return opts.Configure(svcProvider);
+                                 })
+                                 .AddScoped<IResourceHandlerRegistry, ResourceHandlerRegistry>()
+                                 .AddScoped(typeof(IResourceHandler<>), typeof(ResourceHandler<>));
+        }
 
-            return serviceCollection;
+        /// <summary>
+        /// Adds resource handling
+        /// </summary>
+        /// <param name="serviceCollection"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddFimsResourceHandling<T>(this IServiceCollection serviceCollection) where T : IResourceHandlerRegistration, new()
+        {
+            return serviceCollection.AddFimsResourceHandling(opts => new T().Register(opts));
         }
     }
 }

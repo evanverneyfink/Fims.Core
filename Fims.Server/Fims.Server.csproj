@@ -13,8 +13,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Fims.Core\Fims.Core.csproj" />
+    <ProjectReference Include="..\Fims.Json\Fims.Json.csproj" />
     <ProjectReference Include="..\JsonLd\JsonLd.csproj" />
     <ProjectReference Include="..\Pluralize.NET\Pluralize.NET.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp">
+      <HintPath>..\..\..\..\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.7\Microsoft.CSharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

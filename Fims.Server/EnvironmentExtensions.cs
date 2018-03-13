@@ -1,4 +1,6 @@
-﻿namespace Fims.Server
+﻿using Fims.Core;
+
+namespace Fims.Server
 {
     public static class EnvironmentExtensions
     {

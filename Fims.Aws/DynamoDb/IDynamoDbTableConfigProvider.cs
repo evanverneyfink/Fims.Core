@@ -1,4 +1,6 @@
-﻿namespace Fims.Aws.DynamoDb
+﻿using System;
+
+namespace Fims.Aws.DynamoDb
 {
     public interface IDynamoDbTableConfigProvider
     {
@@ -10,22 +12,22 @@
         /// <summary>
         /// Gets the table name for a type
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <param name="type"></param>
         /// <returns></returns>
-        string GetTableName<T>();
+        string GetTableName(Type type);
 
         /// <summary>
-        /// Gets the name of the hash key for a table of type <see cref="T"/>
+        /// Gets the name of the hash key for a table of the specified type
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <param name="type"></param>
         /// <returns></returns>
-        string GetTableHashKeyName<T>();
+        string GetTableHashKeyName(Type type);
 
         /// <summary>
-        /// Gets the name of the sort key for a table of type <see cref="T"/>
+        /// Gets the name of the sort key for a table of the specified type
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <param name="type"></param>
         /// <returns></returns>
-        string GetTableRangeKeyName<T>();
+        string GetTableRangeKeyName(Type type);
     }
 }

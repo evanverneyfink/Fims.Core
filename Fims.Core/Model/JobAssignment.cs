@@ -1,46 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
-
-namespace Fims.Core.Model
+﻿namespace Fims.Core.Model
 {
     public class JobAssignment : Resource
     {
-        public JobAssignment()
-        {
-        }
+        public string JobProcess { get; set; }
 
-        public JobAssignment(JToken jobProcess)
-        {
-            JobProcessToken = jobProcess;
-            JobProcessStatus = "New";
-            JobProcessStatusReason = null;
-        }
+        public string JobProcessStatus { get; set; }
 
-        public JToken JobProcessToken
-        {
-            get => Get(nameof(JobProcess));
-            set => Set(nameof(JobProcess), value);
-        }
+        public string JobProcessStatusReason { get; set; }
 
-        public JobProcess JobProcess => JobProcessToken.ToResource<JobProcess>();
-
-        public JToken JobProcessStatus
-        {
-            get => Get(nameof(JobProcessStatus));
-            set => Set(nameof(JobProcessStatus), value);
-        }
-
-        public JobProcessStatus Status => JobProcessStatus.ToResource<JobProcessStatus>();
-
-        public string JobProcessStatusReason
-        {
-            get => GetString(nameof(JobProcessStatusReason));
-            set => Set(nameof(JobProcessStatusReason), value);
-        }
-
-        public JToken JobOutput
-        {
-            get => Get(nameof(JobOutput));
-            set => Set(nameof(JobOutput), value);
-        }
+        public JobParameterBag JobOutput { get; set; }
     }
 }

@@ -31,7 +31,7 @@ namespace Fims.Aws.Lambda.ApiGatewayProxy
                                                .WithS3FileStorage()
                                                .With(request)
                                                .With(lambdaContext)
-                                               .BuildResourceApi<ApiGatewayProxyLambdaRequestContext>(opts => new T().Register(opts));
+                                               .BuildResourceApi<ApiGatewayProxyLambdaRequestContext, T>();
             }
             catch (Exception exception)
             {

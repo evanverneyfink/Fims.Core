@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Fims.Core;
 using Fims.Core.Model;
 using Fims.Server;
 using Fims.Server.Api;
@@ -14,15 +15,15 @@ namespace Fims.Services.Jobs.WorkerFunctions
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="dataHandler"></param>
-        /// <param name="resourceUrlHelper"></param>
+        /// <param name="resourceDescriptorHelper"></param>
         /// <param name="environment"></param>
         /// <param name="workerFunctionInvoker"></param>
         public WorkerFunctionJobResourceHandler(ILogger logger,
                                                 IEnvironment environment,
                                                 IResourceDataHandler dataHandler,
-                                                IResourceUrlHelper resourceUrlHelper,
+                                                IResourceDescriptorHelper resourceDescriptorHelper,
                                                 IWorkerFunctionInvoker workerFunctionInvoker)
-            : base(logger, environment, dataHandler, resourceUrlHelper)
+            : base(logger, environment, dataHandler, resourceDescriptorHelper)
         {
             WorkerFunctionInvoker = workerFunctionInvoker;
         }

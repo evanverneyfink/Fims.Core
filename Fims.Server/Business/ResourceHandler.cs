@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Fims.Core;
 using Fims.Core.Model;
 using Fims.Server.Api;
 using Fims.Server.Data;
 
 namespace Fims.Server.Business
 {
-    public class ResourceHandler<T> : IResourceHandler, IResourceHandler<T> where T : Resource
+    public class ResourceHandler<T> : IResourceHandler, IResourceHandler<T> where T : Resource, new()
     {
         /// <summary>
         /// Instantiates a <see cref="ResourceHandler{T}"/>
@@ -15,13 +17,13 @@ namespace Fims.Server.Business
         /// <param name="logger"></param>
         /// <param name="environment"></param>
         /// <param name="dataHandler"></param>
-        /// <param name="resourceUrlHelper"></param>
-        public ResourceHandler(ILogger logger, IEnvironment environment, IResourceDataHandler dataHandler, IResourceUrlHelper resourceUrlHelper)
+        /// <param name="resourceDescriptorHelper"></param>
+        public ResourceHandler(ILogger logger, IEnvironment environment, IResourceDataHandler dataHandler, IResourceDescriptorHelper resourceDescriptorHelper)
         {
             Logger = logger;
             Environment = environment;
             DataHandler = dataHandler;
-            ResourceUrlHelper = resourceUrlHelper;
+            ResourceDescriptorHelper = resourceDescriptorHelper;
         }
 
         /// <summary>
@@ -42,7 +44,7 @@ namespace Fims.Server.Business
         /// <summary>
         /// Gets the resource url helper
         /// </summary>
-        protected IResourceUrlHelper ResourceUrlHelper { get; }
+        protected IResourceDescriptorHelper ResourceDescriptorHelper { get; }
 
         #region Explicit IResourceHandler Implementation
 
@@ -128,22 +130,7 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public virtual async Task<T> Create(ResourceDescriptor resourceDescriptor, T resource)
         {
-            // set new ID on the resource descriptor
-            resourceDescriptor.Id = Guid.NewGuid().ToString();
-
-            // set url as the ID of the resource
-            resource.Id = (Environment.PublicUrl()?.TrimEnd('/') ?? string.Empty) + ResourceUrlHelper.GetUrlPath(resourceDescriptor);
-
-            // set created/modified dates and times
-            if (!resource.DateCreated.HasValue)
-                resource.DateCreated = DateTime.UtcNow;
-            if (!resource.DateModified.HasValue)
-                resource.DateModified = DateTime.UtcNow;
-
-            // call data layer to store the object
-            resource = await DataHandler.Create(resourceDescriptor, resource);
-
-            return resource;
+            return (T)await CreateResource(resourceDescriptor, resource);
         }
 
         /// <summary>
@@ -154,6 +141,10 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public virtual async Task<T> Update(ResourceDescriptor resourceDescriptor, T resource)
         {
+            // create any new child resources
+            foreach (var childResource in resource.GetChildResources().Where(r => string.IsNullOrWhiteSpace(r.Id)))
+                await CreateResource(new ResourceDescriptor(resource.GetType()) { Parent = resourceDescriptor }, childResource);
+
             // set the modified date to now
             resource.DateModified = DateTime.UtcNow;
             
@@ -172,6 +163,37 @@ namespace Fims.Server.Business
         {
             // call data layer to delete the resource
             await DataHandler.Delete<T>(resourceDescriptor);
+        }
+
+        /// <summary>
+        /// Creates a new resource
+        /// </summary>
+        /// <param name="resourceDescriptor"></param>
+        /// <param name="resource"></param>
+        /// <returns></returns>
+        private async Task<Resource> CreateResource(ResourceDescriptor resourceDescriptor, Resource resource)
+        {
+            // set new ID and url on the resource descriptor
+            resourceDescriptor.Id = Guid.NewGuid().ToString();
+            resourceDescriptor.Url =
+                (Environment.PublicUrl()?.TrimEnd('/') ?? string.Empty) + ResourceDescriptorHelper.GetUrlPath(resourceDescriptor);
+
+            // set url as the ID of the resource
+            resource.Id = resourceDescriptor.Url;
+
+            // set created/modified dates and times
+            if (!resource.DateCreated.HasValue)
+                resource.DateCreated = DateTime.UtcNow;
+            if (!resource.DateModified.HasValue)
+                resource.DateModified = DateTime.UtcNow;
+
+            // create child resources
+            foreach (var childResource in resource.GetChildResources().Where(r => string.IsNullOrWhiteSpace(r.Id)))
+                await CreateResource(new ResourceDescriptor(childResource.GetType()) {Parent = resourceDescriptor}, childResource);
+
+            await DataHandler.Create(resourceDescriptor, resource);
+
+            return resource;
         }
     }
 }

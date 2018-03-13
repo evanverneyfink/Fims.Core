@@ -1,73 +1,19 @@
-﻿using Newtonsoft.Json.Linq;
-
-namespace Fims.Core.Model
+﻿namespace Fims.Core.Model
 {
     public class Job : Resource
     {
-        public Job()
-        {
-        }
+        public string JobStatus { get; set; }
 
-        public Job(JToken jobProfile, JToken jobInput, JToken asyncEndpointToken)
-        {
-            JobProfile = jobProfile;
-            JobInput = jobInput;
-            AsyncEndpointToken = asyncEndpointToken;
+        public string JobStatusReason { get; set; }
+        
+        public JobProfile JobProfile { get; set; }
 
-            JobStatus = "New";
-            JobStatusReason = null;
-            JobProcess = null;
-            JobOutput = null;
-        }
+        public AsyncEndpoint AsyncEndpoint { get; set; }
 
-        public string JobStatus
-        {
-            get => GetString(nameof(JobStatus));
-            set => Set(nameof(JobStatus), value);
-        }
+        public string JobProcess { get; set; }
 
-        public string JobStatusReason
-        {
-            get => GetString(nameof(JobStatusReason));
-            set => Set(nameof(JobStatusReason), value);
-        }
+        public JobParameterBag JobInput { get; set; }
 
-        public JToken JobProfile
-        {
-            get => Get(nameof(JobProfile));
-            set => Set(nameof(JobProfile), value);
-        }
-
-        public JobProfile Profile => JobProfile.ToResource<JobProfile>();
-
-        public JToken AsyncEndpointToken
-        {
-            get => Get(nameof(AsyncEndpoint));
-            set => Set(nameof(AsyncEndpoint), value);
-        }
-
-        public AsyncEndpoint AsyncEndpoint => JobProfile.ToResource<AsyncEndpoint>();
-
-        public string JobProcess
-        {
-            get => GetString(nameof(JobProcess));
-            set => Set(nameof(JobProcess), value);
-        }
-
-        public JToken JobInput
-        {
-            get => Get(nameof(JobInput));
-            set => Set(nameof(JobInput), value);
-        }
-
-        public JobParameterBag InputParameterBag => JobInput.ToResource<JobParameterBag>();
-
-        public JToken JobOutput
-        {
-            get => Get(nameof(JobOutput));
-            set => Set(nameof(JobOutput), value);
-        }
-
-        public JobParameterBag OutputParameterBag => JobOutput.ToResource<JobParameterBag>();
+        public JobParameterBag JobOutput { get; set; }
     }
 }

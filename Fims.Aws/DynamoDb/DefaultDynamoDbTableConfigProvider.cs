@@ -1,4 +1,5 @@
-﻿using Fims.Server;
+﻿using System;
+using Fims.Server;
 
 namespace Fims.Aws.DynamoDb
 {
@@ -26,22 +27,22 @@ namespace Fims.Aws.DynamoDb
         /// <summary>
         /// Gets the table name for a type
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <param name="type"></param>
         /// <returns></returns>
-        public string GetTableName<T>() => Environment.TableName();
+        public string GetTableName(Type type) => Environment.TableName();
 
         /// <summary>
-        /// Gets the name of the key for a table of type <see cref="T"/>
+        /// Gets the name of the hash key for a table of the specified type
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <param name="type"></param>
         /// <returns></returns>
-        public string GetTableHashKeyName<T>() => DynamoDbDefaults.ResourceTypeAttribute;
+        public string GetTableHashKeyName(Type type) => DynamoDbDefaults.ResourceTypeAttribute;
 
         /// <summary>
-        /// Gets the name of the key for a table of type <see cref="T"/>
+        /// Gets the name of the sort key for a table of the specified type
         /// </summary>
-        /// <typeparam name="T"></typeparam>
+        /// <param name="type"></param>
         /// <returns></returns>
-        public string GetTableRangeKeyName<T>() => DynamoDbDefaults.ResourceIdAttribute;
+        public string GetTableRangeKeyName(Type type) => DynamoDbDefaults.ResourceIdAttribute;
     }
 }

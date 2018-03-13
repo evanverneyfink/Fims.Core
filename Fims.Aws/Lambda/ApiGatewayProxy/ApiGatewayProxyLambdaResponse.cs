@@ -9,18 +9,20 @@ namespace Fims.Aws.Lambda.ApiGatewayProxy
     public class ApiGatewayProxyLambdaResponse : IApiGatewayProxyLambdaResponse
     {
         /// <summary>
-        /// Instantiates a <see cref="ApiGatewayProxyLambdaResponse"/>
-        /// </summary>
-        /// <param name="statusCode"></param>
-        public ApiGatewayProxyLambdaResponse(HttpStatusCode statusCode)
-        {
-            Response = new APIGatewayProxyResponse {StatusCode = (int)statusCode};
-        }
-
-        /// <summary>
         /// Gets the underlying response
         /// </summary>
-        public APIGatewayProxyResponse Response { get; }
+        public APIGatewayProxyResponse Response { get; } = new APIGatewayProxyResponse();
+
+        /// <summary>
+        /// Sets the status of the response
+        /// </summary>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        public IResponse WithStatus(HttpStatusCode status)
+        {
+            Response.StatusCode = (int)status;
+            return this;
+        }
 
         /// <summary>
         /// Sets a header on the response

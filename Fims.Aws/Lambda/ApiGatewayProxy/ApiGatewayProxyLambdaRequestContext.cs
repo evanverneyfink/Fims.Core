@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 using Amazon.Lambda.APIGatewayEvents;
 using Fims.Server.Api;
@@ -44,13 +43,9 @@ namespace Fims.Aws.Lambda.ApiGatewayProxy
         public Task<string> ReadBodyAsText() => Task.FromResult(Request.Body);
 
         /// <summary>
-        /// Creates a response to be sent back to the requester using a <see cref="ApiGatewayProxyLambdaResponse"/>
+        /// Gets the response to be sent back to the requester using a <see cref="ApiGatewayProxyLambdaResponse"/>
         /// </summary>
-        /// <param name="status"></param>
         /// <returns></returns>
-        public IResponse CreateResponse(HttpStatusCode status = HttpStatusCode.OK)
-        {
-            return new ApiGatewayProxyLambdaResponse(status);
-        }
+        public IResponse Response { get; } = new ApiGatewayProxyLambdaResponse();
     }
 }

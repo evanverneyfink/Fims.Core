@@ -1,4 +1,6 @@
-﻿using Fims.Services.Jobs.WorkerFunctions;
+﻿using Fims.Core.Serialization;
+using Fims.Server.Api;
+using Fims.Services.Jobs.WorkerFunctions;
 
 namespace Fims.Aws.ServiceBuilding
 {
@@ -8,5 +10,10 @@ namespace Fims.Aws.ServiceBuilding
         /// Gets the worker
         /// </summary>
         IWorker Worker { get; }
+
+        /// <summary>
+        /// Gets the resource serializer
+        /// </summary>
+        IResourceSerializer ResourceSerializer { get; }
     }
 }

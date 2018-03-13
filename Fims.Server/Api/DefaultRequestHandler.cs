@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Fims.Core.JsonLd;
+using Fims.Core;
 using Fims.Core.Model;
+using Fims.Core.Serialization;
 using Fims.Server.Business;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json.Linq;
@@ -16,27 +17,21 @@ namespace Fims.Server.Api
         /// Instantiates a <see cref="DefaultRequestHandler"/>
         /// </summary>
         /// <param name="logger"></param>
-        /// <param name="jsonLdContextManager"></param>
-        /// <param name="jsonLdResourceHelper"></param>
-        /// <param name="environment"></param>
-        /// <param name="resourceUrlHelper"></param>
+        /// <param name="resourceDescriptorHelper"></param>
         /// <param name="resourceHandlerRegistry"></param>
         /// <param name="requestContext"></param>
+        /// <param name="resourceSerializer"></param>
         public DefaultRequestHandler(ILogger logger,
-                                     IJsonLdContextManager jsonLdContextManager,
-                                     IJsonLdResourceHelper jsonLdResourceHelper,
-                                     IEnvironment environment,
-                                     IResourceUrlHelper resourceUrlHelper,
+                                     IResourceDescriptorHelper resourceDescriptorHelper,
                                      IResourceHandlerRegistry resourceHandlerRegistry,
-                                     IRequestContext requestContext)
+                                     IRequestContext requestContext,
+                                     IResourceSerializer resourceSerializer)
         {
             Logger = logger;
-            JsonLdContextManager = jsonLdContextManager;
-            JsonLdResourceHelper = jsonLdResourceHelper;
-            Environment = environment;
-            ResourceUrlHelper = resourceUrlHelper;
+            ResourceDescriptorHelper = resourceDescriptorHelper;
             ResourceHandlerRegistry = resourceHandlerRegistry;
             RequestContext = requestContext;
+            ResourceSerializer = resourceSerializer;
         }
 
         /// <summary>
@@ -45,24 +40,9 @@ namespace Fims.Server.Api
         private ILogger Logger { get; }
 
         /// <summary>
-        /// Gets the JSON LD context manager
-        /// </summary>
-        private IJsonLdContextManager JsonLdContextManager { get; }
-
-        /// <summary>
-        /// Gets the JSON LD resource helper
-        /// </summary>
-        private IJsonLdResourceHelper JsonLdResourceHelper { get; }
-
-        /// <summary>
-        /// Gets the environment
-        /// </summary>
-        private IEnvironment Environment { get; }
-
-        /// <summary>
         /// Gets the resource type mapper
         /// </summary>
-        private IResourceUrlHelper ResourceUrlHelper { get; }
+        private IResourceDescriptorHelper ResourceDescriptorHelper { get; }
 
         /// <summary>
         /// Gets the request processor
@@ -75,99 +55,94 @@ namespace Fims.Server.Api
         private IRequestContext RequestContext { get; }
 
         /// <summary>
+        /// Gets the resource serializer
+        /// </summary>
+        private IResourceSerializer ResourceSerializer { get; }
+
+        /// <summary>
         /// Handles an HTTP request
         /// </summary>
         /// <returns></returns>
         public async Task<IResponse> HandleRequest()
         {
-            Logger.Debug("Handling request to {0} {1}", RequestContext.Method, RequestContext.Path);
-
-            // check if this is the default context
-            if (RequestContext.Path.Equals(Urls.DefaultJsonLdContext, StringComparison.OrdinalIgnoreCase))
+            try
             {
-                Logger.Debug("Request was made for default JSON-LD context");
-                return RequestContext.CreateResponse().WithJsonBody(JsonLdContextManager.GetDefault());
-            }
+                // add access control header first
+                RequestContext.Response.WithHeader("Access-Control-Allow-Origin", "*");
+                
+                Logger.Debug("Handling request to {0} {1}. Parsing resource descriptor from path...", RequestContext.Method, RequestContext.Path);
 
-            Logger.Debug("Parsing resource descriptor from path...");
+                // get the resource descriptor
+                var resourceDescriptor = ResourceDescriptorHelper.GetResourceDescriptor(RequestContext.Path);
+                if (resourceDescriptor == null)
+                    return RequestContext.Response.WithStatus(HttpStatusCode.NotFound);
 
-            // get the resource descriptor
-            var resourceDescriptor = ResourceUrlHelper.GetResourceDescriptor(RequestContext.Path);
-            if (resourceDescriptor == null)
-                return RequestContext.CreateResponse(HttpStatusCode.NotFound);
+                Logger.Debug("Parsing resource descriptor from path...");
 
-            Logger.Debug("Parsing resource descriptor from path...");
+                // if the resource type is not valid for this service, it's an unrecognized route
+                if (!ResourceHandlerRegistry.IsSupported(resourceDescriptor.RootType))
+                    return RequestContext.Response.WithStatus(HttpStatusCode.NotFound);
 
-            // if the resource type is not valid for this service, it's an unrecognized route
-            if (!ResourceHandlerRegistry.IsSupported(resourceDescriptor.RootType))
-                return RequestContext.CreateResponse(HttpStatusCode.NotFound);
+                Logger.Debug("Successfully parsed resource descriptor for type {0} from path. Creating resource handler...",
+                             resourceDescriptor.Type.FullName);
 
-            Logger.Debug("Successfully parsed resource descriptor for type {0} from path. Creating resource handler...", resourceDescriptor.Type.FullName);
+                // get handler for resource type
+                var resourceHandler = ResourceHandlerRegistry.Get(resourceDescriptor.Type);
+                if (resourceHandler == null)
+                {
+                    Logger.Error("Failed to created resource handler for type '{0}' even though its a supported type for this API.",
+                                 resourceDescriptor.Type);
+                    return RequestContext.Response.WithStatus(HttpStatusCode.InternalServerError);
+                }
 
-            Logger.Debug("ResourceHandlerProvider is {0}null.", ResourceHandlerRegistry != null ? "not " : "");
+                Logger.Debug("Successfully created resource handler of type {0} for resource type {1}. Processing {2} request...",
+                             resourceHandler.GetType().FullName,
+                             resourceDescriptor.Type.Name,
+                             RequestContext.Method);
 
-            // get handler for resource type
-            var resourceHandler = ResourceHandlerRegistry.Get(resourceDescriptor.Type);
-            if (resourceHandler == null)
-            {
-                Logger.Error("Failed to created resource handler for type '{0}' even though its a supported type for this API.", resourceDescriptor.Type);
-                return RequestContext.CreateResponse(HttpStatusCode.InternalServerError);
-            }
-
-            Logger.Debug("Successfully created resource handler of type {0} for resource type {1}. Processing {2} request...",
-                         resourceHandler.GetType().FullName,
-                         resourceDescriptor.Type.Name,
-                         RequestContext.Method);
-
-            // use default context
-            var contextUrl = Environment.PublicUrl() + Urls.DefaultJsonLdContext;
-
-            // ensure default url is mapped to default context
-            JsonLdContextManager.Set(contextUrl, JsonLdContextManager.GetDefault());
-            JsonLdContextManager.DefaultUrl = contextUrl;
-
-            Logger.Debug("Set default context to url {0}: {1}", JsonLdContextManager.DefaultUrl, JsonLdContextManager.GetDefault());
-
-            IResponse response;
-
-            // get or delete do not have a body - just use the route
-            if (HttpMethods.IsGet(RequestContext.Method))
-                response = await HandleGet(RequestContext, resourceHandler, resourceDescriptor);
-            else if (HttpMethods.IsDelete(RequestContext.Method))
-                response = await HandleDelete(RequestContext, resourceHandler, resourceDescriptor);
-            else
-            {
-                // read body of request as JSON
-                var resource = await GetResourceFromJson(RequestContext, resourceDescriptor);
-
-                // ensure that the provided resource ID matches the ID from the route
-                // in the case of a POST, this should be null
-                if (resource.Id != resourceDescriptor.Id)
-                    return RequestContext.CreateResponse(HttpStatusCode.BadRequest)
-                                         .WithPlainTextBody(
-                                             $"Resource ID does not match ID in payload ('{resourceDescriptor.Id}' != '{resource.Id}'");
-
-                // create or update based on the POST vs PUT
-                // if we have an ID for a POST or no ID for a PUT, the method is not supported for the route
-                if (HttpMethods.IsPost(RequestContext.Method) && resourceDescriptor.Id == null)
-                    response = await HandlePost(RequestContext, resourceHandler, resourceDescriptor, resource);
-                else if (HttpMethods.IsPut(RequestContext.Method) && resourceDescriptor.Id != null)
-                    response = await HandlePut(RequestContext, resourceHandler, resourceDescriptor, resource);
+                // get or delete do not have a body - just use the route
+                if (HttpMethods.IsGet(RequestContext.Method))
+                    await HandleGet(resourceHandler, resourceDescriptor);
+                else if (HttpMethods.IsDelete(RequestContext.Method))
+                    await HandleDelete(resourceHandler, resourceDescriptor);
                 else
-                    return RequestContext.CreateResponse(HttpStatusCode.MethodNotAllowed);
-            }
+                {
+                    // read body of request as JSON
+                    var resource = await ResourceSerializer.Deserialize(await RequestContext.ReadBodyAsText(), resourceDescriptor.Type);
 
-            return response.WithHeader("Access-Control-Allow-Origin", "*");
+                    // ensure that the provided resource ID matches the ID from the route
+                    // in the case of a POST, this should be null
+                    if (resource.Id != resourceDescriptor.Id)
+                        return RequestContext.Response
+                                             .WithStatus(HttpStatusCode.BadRequest)
+                                             .WithPlainTextBody(
+                                                 $"Resource ID does not match ID in payload ('{resourceDescriptor.Id}' != '{resource.Id}'");
+
+                    // create or update based on the POST vs PUT
+                    // if we have an ID for a POST or no ID for a PUT, the method is not supported for the route
+                    if (HttpMethods.IsPost(RequestContext.Method) && resourceDescriptor.Id == null)
+                        await HandlePost(resourceHandler, resourceDescriptor, resource);
+                    else if (HttpMethods.IsPut(RequestContext.Method) && resourceDescriptor.Id != null)
+                        await HandlePut(resourceHandler, resourceDescriptor, resource);
+                    else
+                        return RequestContext.Response.WithStatus(HttpStatusCode.MethodNotAllowed);
+                }
+
+                return RequestContext.Response;
+            }
+            catch (Exception e)
+            {
+                return RequestContext.Response.WithStatus(HttpStatusCode.InternalServerError).WithPlainTextBody(e.ToString());
+            }
         }
 
         /// <summary>
         /// Handles a GET by either getting a resource by ID or querying against all resources
         /// </summary>
-        /// <param name="requestContext"></param>
         /// <param name="resourceHandler"></param>
         /// <param name="resourceDescriptor"></param>
         /// <returns></returns>
-        private async Task<IResponse> HandleGet(IRequestContext requestContext, IResourceHandler resourceHandler, ResourceDescriptor resourceDescriptor)
+        private async Task HandleGet(IResourceHandler resourceHandler, ResourceDescriptor resourceDescriptor)
         {
             if (resourceDescriptor.Id != null)
             {
@@ -176,32 +151,34 @@ namespace Fims.Server.Api
 
                 // if found, render the resource and return in the body
                 // otherwise, indicate not found
-                return resource != null
-                           ? requestContext.CreateResponse().WithJsonBody(await GetJsonFromResource(requestContext, resource))
-                           : requestContext.CreateResponse(HttpStatusCode.NotFound);
+                if (resource != null)
+                    RequestContext.Response.WithStatus(HttpStatusCode.OK).WithJsonBody(ResourceSerializer.Serialize(resource));
+                else
+                    RequestContext.Response.WithStatus(HttpStatusCode.NotFound);
             }
+            else
+            {
+                Logger.Debug("Executing query for resources of type {0}...", resourceDescriptor.Type);
 
-            Logger.Debug("Executing query for resources of type {0}...", resourceDescriptor.Type);
+                // no id, so this is a query
+                var resourceCollection = await resourceHandler.Query(resourceDescriptor);
 
-            // no id, so this is a query
-            var resourceCollection = await resourceHandler.Query(resourceDescriptor);
+                Logger.Debug("Completed query for resources of type {0}.", resourceDescriptor.Type);
 
-            Logger.Debug("Completed query for resources of type {0}.", resourceDescriptor.Type);
-
-            // create JSON array from results and return as body
-            return requestContext.CreateResponse().WithJsonBody(
-                new JArray(await Task.WhenAll(resourceCollection.Select(r => GetJsonFromResource(requestContext, r)))));
+                // create JSON array from results and return as body
+                RequestContext.Response.WithStatus(HttpStatusCode.OK)
+                              .WithJsonBody(new JArray(resourceCollection.Select(r => ResourceSerializer.Serialize(r))));
+            }
         }
 
         /// <summary>
         /// Handles a POST by creating a resource
         /// </summary>
-        /// <param name="requestContext"></param>
         /// <param name="resourceHandler"></param>
         /// <param name="resourceDescriptor"></param>
         /// <param name="resource"></param>
         /// <returns></returns>
-        private async Task<IResponse> HandlePost(IRequestContext requestContext, IResourceHandler resourceHandler, ResourceDescriptor resourceDescriptor, Resource resource)
+        private async Task HandlePost(IResourceHandler resourceHandler, ResourceDescriptor resourceDescriptor, Resource resource)
         {
             try
             {
@@ -213,102 +190,77 @@ namespace Fims.Server.Api
 
                 Logger.Info("Successfully created resource {0}.", resource.Id);
 
-                var responseJson = await GetJsonFromResource(requestContext, result);
+                var responseJson = ResourceSerializer.Serialize(result);
                 Logger.Debug("Response JSON: {0}", responseJson);
 
                 // return the new object rendered as JSON
-                return requestContext.CreateResponse().WithJsonBody(responseJson);
+                RequestContext.Response.WithStatus(HttpStatusCode.OK).WithJsonBody(responseJson);
             }
             catch (Exception e)
             {
-                return requestContext.CreateResponse(HttpStatusCode.InternalServerError).WithPlainTextBody(e.ToString());
+                RequestContext.Response.WithStatus(HttpStatusCode.InternalServerError).WithPlainTextBody(e.ToString());
             }
         }
 
         /// <summary>
         /// Handles a PUT by updating a resource
         /// </summary>
-        /// <param name="requestContext"></param>
         /// <param name="resourceHandler"></param>
         /// <param name="resourceDescriptor"></param>
         /// <param name="resource"></param>
         /// <returns></returns>
-        private async Task<IResponse> HandlePut(IRequestContext requestContext, IResourceHandler resourceHandler, ResourceDescriptor resourceDescriptor, Resource resource)
+        private async Task HandlePut(IResourceHandler resourceHandler, ResourceDescriptor resourceDescriptor, Resource resource)
         {
             try
             {
                 // get the object first to ensure it exists
                 var existing = await resourceHandler.Get(resourceDescriptor);
                 if (existing == null)
-                    return requestContext.CreateResponse(HttpStatusCode.NotFound);
+                {
+                    RequestContext.Response.WithStatus(HttpStatusCode.NotFound);
+                    return;
+                }
 
                 // update resource using handler
                 var result = await resourceHandler.Update(resourceDescriptor, resource);
                 
                 // return the updated object rendered as JSON
-                return requestContext.CreateResponse().WithJsonBody(await GetJsonFromResource(requestContext, result));
+                RequestContext.Response.WithStatus(HttpStatusCode.OK).WithJsonBody(ResourceSerializer.Serialize(result));
             }
             catch (Exception e)
             {
-                return requestContext.CreateResponse(HttpStatusCode.InternalServerError).WithPlainTextBody(e.ToString());
+                RequestContext.Response.WithStatus(HttpStatusCode.InternalServerError).WithPlainTextBody(e.ToString());
             }
         }
 
         /// <summary>
         /// Handles DELETE by removing a resource
         /// </summary>
-        /// <param name="requestContext"></param>
         /// <param name="resourceHandler"></param>
         /// <param name="resourceDescriptor"></param>
         /// <returns></returns>
-        private async Task<IResponse> HandleDelete(IRequestContext requestContext, IResourceHandler resourceHandler, ResourceDescriptor resourceDescriptor)
+        private async Task HandleDelete(IResourceHandler resourceHandler, ResourceDescriptor resourceDescriptor)
         {
             try
             {
                 // get the resource to ensure it exists
                 var existing = await resourceHandler.Get(resourceDescriptor);
                 if (existing == null)
-                    return requestContext.CreateResponse(HttpStatusCode.NotFound);
+                {
+                    RequestContext.Response.WithStatus(HttpStatusCode.NotFound);
+                    return;
+                }
 
                 // delete the resource using the handler
                 await resourceHandler.Delete(resourceDescriptor);
 
                 // return OK to indicate the resource was successfully deleted
-                return requestContext.CreateResponse();
+                RequestContext.Response.WithStatus(HttpStatusCode.OK);
             }
             catch (Exception e)
             {
-                return requestContext.CreateResponse(HttpStatusCode.InternalServerError).WithPlainTextBody(e.ToString());
+                RequestContext.Response.WithStatus(HttpStatusCode.InternalServerError).WithPlainTextBody(e.ToString());
             }
-        }
-
-        /// <summary>
-        /// Gets a resource from the JSON in the body of the request
-        /// </summary>
-        /// <param name="requestContext"></param>
-        /// <param name="resourceDescriptor"></param>
-        /// <returns></returns>
-        private async Task<Resource> GetResourceFromJson(IRequestContext requestContext, ResourceDescriptor resourceDescriptor)
-        {
-            var inputJson = JToken.Parse(await requestContext.ReadBodyAsText());
-
-            Logger.Debug("Getting resource from input JSON: {0}", inputJson);
-
-            return await JsonLdResourceHelper.GetResourceFromJson(inputJson, resourceDescriptor.Type);
-        }
-
-        /// <summary>
-        /// Renders a resource to JSON using the provided JSON LD context
-        /// </summary>
-        /// <param name="requestContext"></param>
-        /// <param name="resource"></param>
-        /// <returns></returns>
-        private async Task<JToken> GetJsonFromResource(IRequestContext requestContext, Resource resource)
-        {
-            return await JsonLdResourceHelper.GetJsonFromResource(resource,
-                                                                  requestContext.QueryParameters != null && requestContext.QueryParameters.ContainsKey("context")
-                                                                      ? requestContext.QueryParameters["context"]
-                                                                      : null);
         }
     }
 }

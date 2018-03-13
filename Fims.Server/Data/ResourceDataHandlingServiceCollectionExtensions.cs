@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Fims.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fims.Server.Data
 {
@@ -12,6 +13,8 @@ namespace Fims.Server.Data
         public static IServiceCollection AddFimsResourceDataHandling(this IServiceCollection serviceCollection)
         {
             return serviceCollection
+                   .AddBasicJsonSerialization()
+                   .AddScoped<IDocumentHelper, DocumentHelper>()
                    .AddScoped(typeof(IRepositoryResourceDataHandler), typeof(RepositoryResourceDataHandler))
                    .AddScoped(typeof(IHttpResourceDataHandler), typeof(HttpResourceDataHandler))
                    .AddScoped(typeof(IResourceDataHandler), typeof(ResourceDataHandler));

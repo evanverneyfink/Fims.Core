@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Amazon.DynamoDBv2.DocumentModel;
 using Fims.Core.Model;
+using Fims.Core.Serialization;
 using Newtonsoft.Json.Linq;
 
 namespace Fims.Aws.DynamoDb
@@ -12,9 +14,22 @@ namespace Fims.Aws.DynamoDb
         /// Converts a <see cref="Document"/> to an object
         /// </summary>
         /// <typeparam name="T"></typeparam>
+        /// <param name="serializer"></param>
         /// <param name="document"></param>
         /// <returns></returns>
-        public static T ToObject<T>(this Document document) where T : Resource
+        public static async Task<T> ToObject<T>(this IResourceSerializer serializer, Document document) where T : Resource
+        {
+            return (T)await serializer.ToObject(document, typeof(T));
+        }
+
+        /// <summary>
+        /// Converts a <see cref="Document"/> to an object
+        /// </summary>
+        /// <param name="serializer"></param>
+        /// <param name="document"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static async Task<Resource> ToObject(this IResourceSerializer serializer, Document document, Type type)
         {
             var json = document.ToJson();
             Console.WriteLine("[DynamoDbExtensions.ToObject] Document JSON = {0}", json);
@@ -22,19 +37,20 @@ namespace Fims.Aws.DynamoDb
             var jObj = JObject.Parse(json).Unwrap();
             Console.WriteLine("[DynamoDbExtensions.ToObject] Unwrapped JSON = {0}", jObj);
 
-            return (T)Resource.FromToken(jObj, typeof(T));
+            return await serializer.Deserialize(jObj.ToString(), type);
         }
 
         /// <summary>
         /// Converts an object to a <see cref="Document"/>
         /// </summary>
+        /// <param name="serializer"></param>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public static Document ToDocument<T>(this T resource) where T : Resource
+        public static Document ToDocument<T>(this IResourceSerializer serializer, T resource) where T : Resource
         {
             Console.WriteLine("[DynamoDbExtensions.ToDocument] Object JSON = {0}", resource);
 
-            var jObj = resource.Wrap();
+            var jObj = serializer.Wrap(resource);
             Console.WriteLine("[DynamoDbExtensions.ToDocument] Wrapped JSON = {0}", jObj);
 
             return Document.FromJson(jObj.ToString());
@@ -43,15 +59,16 @@ namespace Fims.Aws.DynamoDb
         /// <summary>
         /// Wraps a resource into a DynamoDB document
         /// </summary>
+        /// <param name="serializer"></param>
         /// <param name="resource"></param>
         /// <returns></returns>
-        public static JObject Wrap(this Resource resource)
+        public static JObject Wrap(this IResourceSerializer serializer, Resource resource)
         {
             return new JObject
             {
-                [DynamoDbDefaults.ResourceTypeAttribute] = resource.Type,
+                [DynamoDbDefaults.ResourceTypeAttribute] = resource.GetType().Name,
                 [DynamoDbDefaults.ResourceIdAttribute] = resource.Id,
-                [DynamoDbDefaults.ResourceAttribute] = resource
+                [DynamoDbDefaults.ResourceAttribute] = JObject.Parse(serializer.Serialize(resource))
             };
         }
 

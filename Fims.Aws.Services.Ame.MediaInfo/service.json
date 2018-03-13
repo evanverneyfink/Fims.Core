@@ -1,5 +1,4 @@
-{ 
-  "type": "fims:Service",
+{
   "label": "MediaInfo AME Service",
   "hasResource": [
     {
@@ -7,24 +6,25 @@
       "httpEndpoint": "{{{serviceUrl}}}"
     }
   ],
-  "acceptsJobType": "fims:AmeJob",
+  "acceptsJobType": "AmeJob",
   "acceptsJobProfile": [
     {
+      "type": "JobProfile",
       "label": "ExtractTechnicalMetadata",
       "hasInputParameter": [
         {
-          "jobProperty": "fims:inputFile",
-          "parameterType": "fims:Locator"
+          "jobProperty": "InputFile",
+          "parameterType": "Locator"
         },
         {
-          "jobProperty": "fims:outputLocation",
-          "parameterType": "fims:Locator"
+          "jobProperty": "outputLocation",
+          "parameterType": "Locator"
         }
       ],
       "hasOutputParameter": [
         {
-          "jobProperty": "fims:outputFile",
-          "parameterType": "fims:Locator"
+          "jobProperty": "outputFile",
+          "parameterType": "Locator"
         }
       ]
     }

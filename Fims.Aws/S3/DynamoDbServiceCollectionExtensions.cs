@@ -1,5 +1,4 @@
-﻿using Fims.Server.Data;
-using Fims.Services.Files;
+﻿using Fims.Server.Files;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Fims.Aws.S3

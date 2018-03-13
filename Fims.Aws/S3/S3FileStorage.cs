@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Fims.Core.Model;
-using Fims.Services.Files;
+using Fims.Server.Files;
 
 namespace Fims.Aws.S3
 {
@@ -17,15 +18,18 @@ namespace Fims.Aws.S3
         /// Saves a file by doing a put to the S3 API
         /// </summary>
         /// <param name="locator"></param>
-        /// <param name="file"></param>
+        /// <param name="fileName"></param>
         /// <param name="contents"></param>
         /// <returns></returns>
-        public async Task SaveFile(Locator locator, string file, string contents)
+        public async Task SaveFile(Locator locator, string fileName, string contents)
         {
+            if (!(locator is AwsS3Locator s3Locator))
+                throw new Exception("Locator must be an AWS S3 locator.");
+
             await S3.PutObjectAsync(new PutObjectRequest
             {
-                BucketName = locator.S3Bucket(),
-                Key = (locator.S3Key() ?? string.Empty) + file,
+                BucketName = s3Locator.AwsS3Bucket,
+                Key = (s3Locator.AwsS3Key ?? string.Empty) + fileName,
                 ContentBody = contents
             });
         }

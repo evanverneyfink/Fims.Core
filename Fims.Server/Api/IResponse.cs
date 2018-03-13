@@ -1,9 +1,17 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Net;
+using Newtonsoft.Json.Linq;
 
 namespace Fims.Server.Api
 {
     public interface IResponse
     {
+        /// <summary>
+        /// Sets the status of the response
+        /// </summary>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        IResponse WithStatus(HttpStatusCode status);
+
         /// <summary>
         /// Sets a header on the response
         /// </summary>

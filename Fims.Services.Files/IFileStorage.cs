@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Fims.Core.Model;
 
-namespace Fims.Services.Files
+namespace Fims.Server.Files
 {
     public interface IFileStorage
     {
@@ -9,8 +9,8 @@ namespace Fims.Services.Files
         /// Saves a file to storage
         /// </summary>
         /// <param name="locator"></param>
-        /// <param name="file"></param>
+        /// <param name="fileName"></param>
         /// <param name="contents"></param>
-        Task SaveFile(Locator locator, string file, string contents);
+        Task SaveFile(Locator locator, string fileName, string contents);
     }
 }

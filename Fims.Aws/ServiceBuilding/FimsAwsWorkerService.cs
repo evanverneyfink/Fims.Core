@@ -1,5 +1,7 @@
 ﻿using System;
+using Fims.Core.Serialization;
 using Fims.Server;
+using Fims.Server.Api;
 using Fims.Services.Jobs.WorkerFunctions;
 
 namespace Fims.Aws.ServiceBuilding
@@ -12,11 +14,13 @@ namespace Fims.Aws.ServiceBuilding
         /// <param name="scope"></param>
         /// <param name="logger"></param>
         /// <param name="worker"></param>
-        public FimsAwsWorkerService(IDisposable scope, ILogger logger, IWorker worker)
+        /// <param name="resourceSerializer"></param>
+        public FimsAwsWorkerService(IDisposable scope, ILogger logger, IWorker worker, IResourceSerializer resourceSerializer)
         {
             Scope = scope;
             Logger = logger;
             Worker = worker;
+            ResourceSerializer = resourceSerializer;
         }
 
         /// <summary>
@@ -33,6 +37,11 @@ namespace Fims.Aws.ServiceBuilding
         /// Gets the worker
         /// </summary>
         public IWorker Worker { get; }
+
+        /// <summary>
+        /// Gets the resource serializer
+        /// </summary>
+        public IResourceSerializer ResourceSerializer { get; }
 
         /// <summary>
         /// Disposes of the underlying worker

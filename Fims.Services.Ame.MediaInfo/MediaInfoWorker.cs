@@ -3,10 +3,10 @@ using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
 using Fims.Core.Model;
+using Fims.Server.Api;
 using Fims.Server.Data;
-using Fims.Services.Files;
+using Fims.Server.Files;
 using Fims.Services.Jobs.WorkerFunctions;
-using Newtonsoft.Json.Linq;
 
 namespace Fims.Services.Ame.MediaInfo
 {
@@ -22,17 +22,20 @@ namespace Fims.Services.Ame.MediaInfo
         /// <param name="processRunner"></param>
         /// <param name="mediaInfoOutputConverter"></param>
         /// <param name="fileStorage"></param>
+        /// <param name="resourceDescriptorHelper"></param>
         public MediaInfoWorker(IResourceDataHandler dataHandler,
                                IMediaInfoAccessibleUrlProvider accessibleUrlProvider,
                                IProcessRunner processRunner,
                                IMediaInfoOutputConverter mediaInfoOutputConverter,
-                               IFileStorage fileStorage)
+                               IFileStorage fileStorage,
+                               IResourceDescriptorHelper resourceDescriptorHelper)
         {
             DataHandler = dataHandler;
             AccessibleUrlProvider = accessibleUrlProvider;
             ProcessRunner = processRunner;
             MediaInfoOutputConverter = mediaInfoOutputConverter;
             FileStorage = fileStorage;
+            ResourceDescriptorHelper = resourceDescriptorHelper;
         }
 
         #endregion
@@ -64,9 +67,23 @@ namespace Fims.Services.Ame.MediaInfo
         /// </summary>
         private IFileStorage FileStorage { get; }
 
+        /// <summary>
+        /// Gets the resource url helper
+        /// </summary>
+        private IResourceDescriptorHelper ResourceDescriptorHelper { get; }
+
         #endregion
 
         #region Methods
+
+        private async Task<Locator> GetLocator(string url)
+        {
+            var uri = new Uri(url, UriKind.Absolute);
+
+            var resourceDescriptor = ResourceDescriptorHelper.GetResourceDescriptor(uri);
+
+            return (Locator)await DataHandler.Get(resourceDescriptor);
+        }
 
         /// <summary>
         /// Runs media info and stores the output to a file
@@ -82,7 +99,7 @@ namespace Fims.Services.Ame.MediaInfo
             await DataHandler.Update(jobAssignment);
 
             // get the job process from the job assignment
-            var jobProcess = await DataHandler.Get<JobProcess>(jobAssignment.JobProcess.Id);
+            var jobProcess = await DataHandler.Get<JobProcess>(jobAssignment.JobProcess);
             if (jobProcess == null)
                 throw new Exception("Failed to resolve jobAssignment.jobProcess");
             
@@ -92,7 +109,7 @@ namespace Fims.Services.Ame.MediaInfo
                 throw new Exception("Failed to resolve jobProcess.job");
 
             // load the job profile
-            var jobProfile = await DataHandler.Get<JobProfile>(job.Profile.Id);
+            var jobProfile = await DataHandler.Get<JobProfile>(job.JobProfile.Id);
             if (jobProfile == null)
                 throw new Exception("Failed to resolve job.jobProfile");
 
@@ -101,7 +118,7 @@ namespace Fims.Services.Ame.MediaInfo
                 throw new Exception($"JobProfile '{jobProfile.Label}' not accepted");
 
             // get the job input
-            var jobInput = await DataHandler.Get<JobParameterBag>(job.InputParameterBag.Id);
+            var jobInput = await DataHandler.Get<JobParameterBag>(job.JobInput.Id);
             if (jobInput == null)
                 throw new Exception("Failed to resolve job.jobInput");
 
@@ -111,14 +128,14 @@ namespace Fims.Services.Ame.MediaInfo
             // ensure the job specifies an output location
             if (jobInput["fims:outputLocation"] == null)
                 throw new Exception("Job does not specify an output location.");
-
+            
             // get output locator
-            var outputLocation = await DataHandler.Get<Locator>(jobInput["fims:outputLocation"].Value<string>());
+            var outputLocation = await GetLocator(jobInput["fims:outputLocation"]?.ToString());
             if (outputLocation == null)
                 throw new Exception("Failed to resolve jobInput[\"fims:outputLocation\"]");
 
             // get input locator
-            var inputFile = await DataHandler.Get<Locator>(jobInput["fims:inputFile"].Value<string>());
+            var inputFile = await GetLocator(jobInput["fims:inputFile"]?.ToString());
             if (inputFile == null)
                 throw new Exception("Failed to resolve jobInput[\"fims:inputFile\"]");
 

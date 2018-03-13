@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Fims.Server.Api
@@ -28,10 +27,9 @@ namespace Fims.Server.Api
         Task<string> ReadBodyAsText();
         
         /// <summary>
-        /// Creates a response to be sent back to the requester
+        /// Gets the response to be sent back to the requester
         /// </summary>
-        /// <param name="status"></param>
         /// <returns></returns>
-        IResponse CreateResponse(HttpStatusCode status = HttpStatusCode.OK);
+        IResponse Response { get; }
     }
 }

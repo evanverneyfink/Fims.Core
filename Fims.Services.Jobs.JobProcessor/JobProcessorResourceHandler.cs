@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Fims.Core;
 using Fims.Core.Jobs;
 using Fims.Core.Model;
 using Fims.Server;
@@ -17,13 +18,13 @@ namespace Fims.Services.Jobs.JobProcessor
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="dataHandler"></param>
-        /// <param name="resourceUrlHelper"></param>
+        /// <param name="resourceDescriptorHelper"></param>
         /// <param name="environment"></param>
         public JobProcessorResourceHandler(ILogger logger,
                                            IEnvironment environment,
                                            IResourceDataHandler dataHandler,
-                                           IResourceUrlHelper resourceUrlHelper)
-            : base(logger, environment, dataHandler, resourceUrlHelper)
+                                           IResourceDescriptorHelper resourceDescriptorHelper)
+            : base(logger, environment, dataHandler, resourceDescriptorHelper)
         {
         }
 
@@ -53,7 +54,7 @@ namespace Fims.Services.Jobs.JobProcessor
                 var serviceResource =
                     services
                         .Where(s => s.CanAcceptJob(job))
-                        .SelectMany(s => s.Resources.Select(r => new {Service = s, Resource = r}))
+                        .SelectMany(s => s.HasResource.Select(r => new {Service = s, Resource = r}))
                         .FirstOrDefault(
                             sr => sr.Resource.ResourceType == "fims:JobAssignment" && !string.IsNullOrWhiteSpace(sr.Resource.HttpEndpoint));
 
@@ -65,10 +66,10 @@ namespace Fims.Services.Jobs.JobProcessor
                         // send the job to the job assignment endpoint
                         var jobAssignment =
                             await DataHandler.Create(ResourceDescriptor.FromUrl<JobAssignment>(serviceResource.Resource.HttpEndpoint),
-                                                     new JobAssignment(jobProcess.Id));
+                                                     new JobAssignment {JobProcess = jobProcess.Id });
 
                         // set assignment back on the job process
-                        jobProcess.JobAssignmentToken = jobAssignment.Id;
+                        jobProcess.JobAssignment = jobAssignment.Id;
 
                         // set status to Running
                         job.JobStatus = "Running";
@@ -102,7 +103,7 @@ namespace Fims.Services.Jobs.JobProcessor
                 }
 
                 // hit the async callback endpoint
-                if (jobProcess.Status.Id == "Failed" && job.AsyncEndpoint != null && !string.IsNullOrWhiteSpace(job.AsyncEndpoint.AsyncFailure))
+                if (jobProcess.JobProcessStatus == "Failed" && job.AsyncEndpoint != null && !string.IsNullOrWhiteSpace(job.AsyncEndpoint.AsyncFailure))
                     await DataHandler.Get<Resource>(job.AsyncEndpoint.AsyncFailure);
             }
             else
@@ -125,24 +126,24 @@ namespace Fims.Services.Jobs.JobProcessor
             var jobProcess = await DataHandler.Get<JobProcess>(resourceDescriptor);
 
             // validate the update
-            if (jobProcess.Status.Id != "Running" ||
-                resource.Status.Id != "Completed" && resource.Status.Id != "Failed")
-                throw new Exception($"Cannot change status of job process from '{jobProcess.Status.Id}' to '{resource.Status.Id}'");
+            if (jobProcess.JobProcessStatus != "Running" ||
+                resource.JobProcessStatus != "Completed" && resource.JobProcessStatus != "Failed")
+                throw new Exception($"Cannot change status of job process from '{jobProcess.JobProcessStatus}' to '{resource.JobProcessStatus}'");
 
             jobProcess.JobProcessStatus = resource.JobProcessStatus;
 
-            var jobAssignment = await DataHandler.Get<JobAssignment>(jobProcess.JobAssignment.Id);
+            var jobAssignment = await DataHandler.Get<JobAssignment>(jobProcess.JobAssignment);
             var job = await DataHandler.Get<Job>(jobProcess.Job.Id);
 
             // update job
-            job.JobStatus = jobProcess.Status.Id;
+            job.JobStatus = jobProcess.JobProcessStatus;
             job.JobStatusReason = jobProcess.JobProcessStatusReason;
             job.JobOutput = jobAssignment.JobOutput;
 
             await DataHandler.Update(job);
 
             // clear the job assignment
-            jobProcess.JobAssignmentToken = null;
+            jobProcess.JobAssignment = null;
 
             var updated = await base.Update(resourceDescriptor, jobProcess);
 
