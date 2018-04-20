@@ -115,7 +115,7 @@ namespace Fims.Server.Data
         /// <returns></returns>
         public async Task<Resource> Update(ResourceDescriptor resourceDescriptor, Resource resource)
         {
-            var resp = await HttpClient.PostAsync(resourceDescriptor.Url, new JsonContent(ResourceSerializer.Serialize(resource)));
+            var resp = await HttpClient.PutAsync(resourceDescriptor.Url, new JsonContent(ResourceSerializer.Serialize(resource)));
 
             resp.EnsureSuccessStatusCode();
 
@@ -130,7 +130,7 @@ namespace Fims.Server.Data
         /// <returns></returns>
         public virtual async Task<T> Update<T>(ResourceDescriptor resourceDescriptor, T resource) where T : Resource, new()
         {
-            var resp = await HttpClient.PostAsync(resourceDescriptor.Url, new JsonContent(ResourceSerializer.Serialize(resource)));
+            var resp = await HttpClient.PutAsync(resourceDescriptor.Url, new JsonContent(ResourceSerializer.Serialize(resource)));
 
             resp.EnsureSuccessStatusCode();
 

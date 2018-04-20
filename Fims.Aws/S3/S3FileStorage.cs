@@ -21,17 +21,21 @@ namespace Fims.Aws.S3
         /// <param name="fileName"></param>
         /// <param name="contents"></param>
         /// <returns></returns>
-        public async Task SaveFile(Locator locator, string fileName, string contents)
+        public async Task<Locator> SaveFile(Locator locator, string fileName, string contents)
         {
             if (!(locator is AwsS3Locator s3Locator))
                 throw new Exception("Locator must be an AWS S3 locator.");
 
+            var objectKey = (s3Locator.AwsS3Key ?? string.Empty) + fileName;
+
             await S3.PutObjectAsync(new PutObjectRequest
             {
                 BucketName = s3Locator.AwsS3Bucket,
-                Key = (s3Locator.AwsS3Key ?? string.Empty) + fileName,
+                Key = objectKey,
                 ContentBody = contents
             });
+
+            return new AwsS3Locator {AwsS3Bucket = s3Locator.AwsS3Bucket, AwsS3Key = objectKey};
         }
     }
 }

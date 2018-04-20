@@ -1,4 +1,6 @@
-﻿namespace Fims.Core.Model
+﻿using System.Collections.Generic;
+
+namespace Fims.Core.Model
 {
     public class JobAssignment : Resource
     {
@@ -8,6 +10,6 @@
 
         public string JobProcessStatusReason { get; set; }
 
-        public JobParameterBag JobOutput { get; set; }
+        public IDictionary<string, object> JobOutput { get; set; }
     }
 }

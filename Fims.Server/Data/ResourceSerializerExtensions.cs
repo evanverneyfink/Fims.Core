@@ -20,7 +20,7 @@ namespace Fims.Server.Data
         /// <returns></returns>
         public static async Task<Resource> DeserializeResponseBodyToResource(this IResourceSerializer serializer, Type type, HttpResponseMessage response)
         {
-            return await serializer.Deserialize(await response.Content.ReadAsStringAsync(), type);
+            return await serializer.Deserialize(await response.Content.ReadAsStringAsync());
         }
 
         /// <summary>

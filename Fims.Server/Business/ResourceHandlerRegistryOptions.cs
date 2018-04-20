@@ -40,11 +40,13 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public ResourceHandlerRegistryOptions Register<T>(Func<IServiceProvider, IResourceHandler<T>> createHandler = null,
                                                           ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
-            where T : Resource
+            where T : Resource, new()
         {
             SupportedTypes.Add(typeof(T));
             if (createHandler != null)
                 ServiceCollection.Add(new ServiceDescriptor(typeof(IResourceHandler<T>), createHandler, serviceLifetime));
+            else
+                ServiceCollection.Add(new ServiceDescriptor(typeof(IResourceHandler<T>), typeof(ResourceHandler<T>), serviceLifetime));
             return this;
         }
 
@@ -56,7 +58,7 @@ namespace Fims.Server.Business
         /// <param name="serviceLifetime"></param>
         /// <returns></returns>
         public ResourceHandlerRegistryOptions Register<TResource, THandler>(ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
-            where TResource : Resource
+            where TResource : Resource, new()
             where THandler : IResourceHandler<TResource>
         {
             SupportedTypes.Add(typeof(TResource));
@@ -77,10 +79,12 @@ namespace Fims.Server.Business
                         var logger = svcProvider.GetService<ILogger>();
                         logger.Info("Using default resource handler for resource type {0}", t.Name);
 
-                        var handler = (IResourceHandler)svcProvider.GetService(typeof(IResourceHandler<>).MakeGenericType(t));
+                        var handlerType = typeof(IResourceHandler<>).MakeGenericType(t);
+
+                        var handler = (IResourceHandler)svcProvider.GetService(handlerType);
                         if (handler == null)
                             logger.Warning(
-                                "Failed to create default handler for resource type {0}. Service provider was unable to resolve generic type.");
+                                "Failed to create default handler for resource type {0}. Service provider was unable to resolve generic type.", t.Name);
 
                         return handler;
                     };

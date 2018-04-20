@@ -15,7 +15,7 @@ namespace Fims.Services.Ame.MediaInfo
         {
             // get xml
             var xmlDoc = new XmlDocument();
-            xmlDoc.Load(stdOut);
+            xmlDoc.LoadXml(stdOut);
 
             // generate json from xml
             var fromXml = JObject.Parse(JsonConvert.SerializeXmlNode(xmlDoc));
@@ -36,14 +36,36 @@ namespace Fims.Services.Ame.MediaInfo
         /// <returns></returns>
         private JToken ExtractMetadata(JToken obj, string path, JToken defaultValue = null)
         {
-            var parts = path.Split('/');
-
-            foreach (var t in parts)
+            foreach (var part in path.Split('/'))
             {
-                obj = obj[t];
+                // check if this part is an integer
+                var isInt = int.TryParse(part, out var partInt);
 
-                if (obj == null)
+                // if this is a single value but we are expecting an array, return the single value
+                if (obj is JValue && isInt && partInt == 0)
+                    continue;
+
+                JToken next = null;
+
+                // try to get the next object
+                if (obj is JArray jArray && isInt && partInt < jArray.Count)
+                    next = obj[partInt];
+                else if (obj is JObject)
+                {
+                    // if the path is for an array with just 1 element in it, the XML-to-JSON
+                    // conversion will convert it to a single object rather an array, so we
+                    // can skip over the array indexer and just try for the object instead
+                    if (isInt && partInt == 0)
+                        continue;
+
+                    next = obj[part];
+                }
+
+                // nothing there - return the default value
+                if (next == null)
                     return defaultValue;
+
+                obj = next;
             }
 
             return obj;
@@ -61,21 +83,21 @@ namespace Fims.Services.Ame.MediaInfo
                 ["@context"] = MediaInfoContexts.Default,
                 ["@type"] = "ebucore:BMEssence",
                 ["ebucore:hasVideoFormat"] = ExtractMetadata(input,
-                                                             "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/$/videoFormatName"),
+                                                             "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/@videoFormatName"),
                 ["ebucore:frameWidth"] = ExtractMetadata(input,
-                                                         "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:width/0/_"),
+                                                         "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:width/0/#text"),
                 ["ebucore:frameHeight"] = ExtractMetadata(input,
-                                                          "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:height/0/_"),
+                                                          "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:height/0/#text"),
                 ["ebucore:frameRate"] = ExtractMetadata(input,
-                                                        "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:frameRate/0/$/factorNumerator") +
+                                                        "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:frameRate/0/@factorNumerator") +
                                         "/" + ExtractMetadata(input,
-                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:frameRate/0/$/factorDenominator"),
+                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:frameRate/0/@factorDenominator"),
                 ["ebucore:displayAspectRatio"] = ExtractMetadata(input,
                                                                  "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:aspectRatio/0/ebucore:factorNumerator") +
                                                  ":" + ExtractMetadata(input,
                                                                        "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:aspectRatio/0/ebucore:factorDenominator"),
                 ["ebucore:hasVideoEncodingFormat"] = ExtractMetadata(input,
-                                                                     "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:videoEncoding/0/$/typeLabel"),
+                                                                     "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:videoEncoding/0/@typeLabel"),
                 ["ebucore:hasVideoCodec"] = ExtractMetadata(input,
                                                             "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:codec/0/ebucore:codecIdentifier/0/dc:identifier/0"),
                 ["ebucore:videoBitRate"] = ExtractMetadata(input,
@@ -90,7 +112,7 @@ namespace Fims.Services.Ame.MediaInfo
                 {
                     ["@type"] = "ebucore:VideoTrack",
                     ["ebucore:trackNumber"] = ExtractMetadata(input,
-                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:videoTrack/0/$/trackId")
+                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:videoTrack/0/@trackId")
                 }
             };
 
@@ -99,10 +121,10 @@ namespace Fims.Services.Ame.MediaInfo
             {
                 var technicalAttributeValue = ExtractMetadata(input,
                                                               "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:technicalAttributeString/" +
-                                                              i + "/_");
+                                                              i + "/#text");
                 var technicalAttributeName = ExtractMetadata(input,
                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:technicalAttributeString/" +
-                                                             i + "/$/typeLabel");
+                                                             i + "/@typeLabel");
                 if (technicalAttributeValue == null || technicalAttributeName == null)
                 {
                     break;
@@ -126,10 +148,10 @@ namespace Fims.Services.Ame.MediaInfo
             {
                 var technicalAttributeValue = ExtractMetadata(input,
                                                               "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:technicalAttributeInteger/" +
-                                                              i + "/_");
+                                                              i + "/#text");
                 var technicalAttributeName = ExtractMetadata(input,
                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:technicalAttributeInteger/" +
-                                                             i + "/$/typeLabel");
+                                                             i + "/@typeLabel");
                 if (technicalAttributeValue == null || technicalAttributeName == null)
                 {
                     break;
@@ -150,10 +172,10 @@ namespace Fims.Services.Ame.MediaInfo
             {
                 var technicalAttributeValue = ExtractMetadata(input,
                                                               "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:technicalAttributeBoolean/" +
-                                                              i + "/_");
+                                                              i + "/#text");
                 var technicalAttributeName = ExtractMetadata(input,
                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:videoFormat/0/ebucore:technicalAttributeBoolean/" +
-                                                             i + "/$/typeLabel");
+                                                             i + "/@typeLabel");
                 if (technicalAttributeValue == null || technicalAttributeName == null)
                 {
                     break;
@@ -169,9 +191,9 @@ namespace Fims.Services.Ame.MediaInfo
             }
 
             output["ebucore:hasAudioFormat"] = ExtractMetadata(input,
-                                                               "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/$/audioFormatName");
+                                                               "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/@audioFormatName");
             output["ebucore:hasAudioEncodingFormat"] = ExtractMetadata(input,
-                                                                       "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:audioEncoding/0/$/typeLabel");
+                                                                       "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:audioEncoding/0/@typeLabel");
             output["ebucore:hasAudioCodec"] = ExtractMetadata(input,
                                                               "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:codec/0/ebucore:codecIdentifier/0/dc:identifier/0");
             output["ebucore:sampleRate"] = ExtractMetadata(input,
@@ -186,9 +208,9 @@ namespace Fims.Services.Ame.MediaInfo
             {
                 ["@type"] = "ebucore:AudioTrack",
                 ["trackId"] = ExtractMetadata(input,
-                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:audioTrack/0/$/trackId"),
+                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:audioTrack/0/@trackId"),
                 ["hasLanguage"] = ExtractMetadata(input,
-                                                  "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:audioTrack/0/$/trackLanguage")
+                                                  "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:audioTrack/0/@trackLanguage")
             };
             output["ebucore:audioChannelNumber"] = ExtractMetadata(input,
                                                                    "ebucore:ebuCoreMain/0/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:channels/0");
@@ -197,10 +219,10 @@ namespace Fims.Services.Ame.MediaInfo
             {
                 var technicalAttributeValue = ExtractMetadata(input,
                                                               "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:technicalAttributeString/" +
-                                                              i + "/_");
+                                                              i + "/#text");
                 var technicalAttributeName = ExtractMetadata(input,
                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:technicalAttributeString/" +
-                                                             i + "/$/typeLabel");
+                                                             i + "/@typeLabel");
                 if (technicalAttributeValue == null || technicalAttributeName == null)
                 {
                     break;
@@ -219,10 +241,10 @@ namespace Fims.Services.Ame.MediaInfo
             {
                 var technicalAttributeValue = ExtractMetadata(input,
                                                               "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:technicalAttributeInteger/" +
-                                                              i + "/_");
+                                                              i + "/#text");
                 var technicalAttributeName = ExtractMetadata(input,
                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:audioFormat/0/ebucore:technicalAttributeInteger/" +
-                                                             i + "/$/typeLabel");
+                                                             i + "/@typeLabel");
                 if (technicalAttributeValue == null || technicalAttributeName == null)
                 {
                     break;
@@ -237,16 +259,16 @@ namespace Fims.Services.Ame.MediaInfo
             }
 
             output["ebucore:hasContainerFormat"] = ExtractMetadata(input,
-                                                                   "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:containerFormat/0/$/containerFormatName");
+                                                                   "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:containerFormat/0/@containerFormatName");
 
             for (var i = 0;; i++)
             {
                 var technicalAttributeValue = ExtractMetadata(input,
                                                               "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:containerFormat/0/ebucore:technicalAttributeString/" +
-                                                              i + "/_");
+                                                              i + "/#text");
                 var technicalAttributeName = ExtractMetadata(input,
                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:containerFormat/0/ebucore:technicalAttributeString/" +
-                                                             i + "/$/typeLabel");
+                                                             i + "/@typeLabel");
                 if (technicalAttributeValue == null || technicalAttributeName == null)
                 {
                     break;
@@ -272,10 +294,10 @@ namespace Fims.Services.Ame.MediaInfo
             {
                 var technicalAttributeValue = ExtractMetadata(input,
                                                               "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:technicalAttributeInteger/" +
-                                                              i + "/_");
+                                                              i + "/#text");
                 var technicalAttributeName = ExtractMetadata(input,
                                                              "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:technicalAttributeInteger/" +
-                                                             i + "/$/typeLabel");
+                                                             i + "/@typeLabel");
                 if (technicalAttributeValue == null || technicalAttributeName == null)
                 {
                     break;
@@ -291,11 +313,11 @@ namespace Fims.Services.Ame.MediaInfo
 
 
             output["ebucore:dateCreated"] =
-                ExtractMetadata(input, "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:dateCreated/0/$/startDate") + "T" +
-                ExtractMetadata(input, "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:dateCreated/0/$/startTime");
+                ExtractMetadata(input, "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:dateCreated/0/@startDate") + "T" +
+                ExtractMetadata(input, "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:dateCreated/0/@startTime");
             output["ebucore:dateModified"] =
-                ExtractMetadata(input, "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:dateModified/0/$/startDate") + "T" +
-                ExtractMetadata(input, "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:dateModified/0/$/startTime");
+                ExtractMetadata(input, "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:dateModified/0/@startDate") + "T" +
+                ExtractMetadata(input, "ebucore:ebuCoreMain/ebucore:coreMetadata/0/ebucore:format/0/ebucore:dateModified/0/@startTime");
 
             return output;
         }

@@ -1,6 +1,6 @@
 ﻿namespace Fims.Core.Model
 {
-    public class ServiceResource : Resource
+    public class ServiceResource
     {
         public string ResourceType { get; set; }
 

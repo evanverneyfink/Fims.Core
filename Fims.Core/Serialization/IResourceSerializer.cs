@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Fims.Core.Model;
 
 namespace Fims.Core.Serialization
@@ -21,15 +20,14 @@ namespace Fims.Core.Serialization
         /// <param name="serialized"></param>
         /// <param name="resolveLinks"></param>
         /// <returns></returns>
-        Task<T> Deserialize<T>(string serialized, bool resolveLinks = false) where T : Resource, new();
+        Task<T> Deserialize<T>(string serialized, bool resolveLinks = false);
 
         /// <summary>
         /// Deserializes a resource from text
         /// </summary>
         /// <param name="serialized"></param>
-        /// <param name="type"></param>
         /// <param name="resolveLinks"></param>
         /// <returns></returns>
-        Task<Resource> Deserialize(string serialized, Type type, bool resolveLinks = false);
+        Task<Resource> Deserialize(string serialized, bool resolveLinks = true);
     }
 }

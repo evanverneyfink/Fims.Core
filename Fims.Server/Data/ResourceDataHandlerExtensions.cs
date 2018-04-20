@@ -19,6 +19,18 @@ namespace Fims.Server.Data
         }
 
         /// <summary>
+        /// Gets a resource by its url
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="resourceDataHandler"></param>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public static Task<Resource> Get(this IResourceDataHandler resourceDataHandler, string url)
+        {
+            return resourceDataHandler.Get(ResourceDescriptor.FromUrl<Resource>(url));
+        }
+
+        /// <summary>
         /// Updates a resource
         /// </summary>
         /// <typeparam name="T"></typeparam>

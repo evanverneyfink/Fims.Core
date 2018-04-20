@@ -13,18 +13,20 @@ namespace Fims.Server.Files
         /// <param name="locator"></param>
         /// <param name="fileName"></param>
         /// <param name="contents"></param>
-        public Task SaveFile(Locator locator, string fileName, string contents)
+        public Task<Locator> SaveFile(Locator locator, string fileName, string contents)
         {
             if (!(locator is LocalLocator localLocator))
                 throw new Exception("Locator is not for a local file.");
+            
+            fileName = (localLocator.FileName ?? string.Empty) + fileName;
 
             // build path to output folder
-            var filePath = Path.Combine(localLocator.FolderPath, (localLocator.FileName ?? String.Empty) + fileName);
+            var filePath = Path.Combine(localLocator.FolderPath, fileName);
 
             // write file
             File.WriteAllText(filePath, contents);
 
-            return Task.CompletedTask;
+            return Task.FromResult<Locator>(new LocalLocator {FolderPath = localLocator.FolderPath, FileName = fileName});
         }
     }
 }

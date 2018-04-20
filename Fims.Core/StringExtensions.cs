@@ -19,6 +19,17 @@ namespace Fims.Core
         }
 
         /// <summary>
+        /// Joins a collection of strings
+        /// </summary>
+        /// <param name="toJoin"></param>
+        /// <param name="joinWith"></param>
+        /// <returns></returns>
+        public static string Join(this IEnumerable<string> toJoin, string joinWith = null)
+        {
+            return toJoin != null ? string.Join(joinWith ?? string.Empty, toJoin) : string.Empty;
+        }
+
+        /// <summary>
         /// Converts a delimited string into a dictionary of key-value pairs
         /// </summary>
         /// <param name="source"></param>
@@ -138,6 +149,14 @@ namespace Fims.Core
         /// <returns>True if parsed successfully; else, false</returns>
         public static bool TryParse(this string textValue, Type type, out object obj)
         {
+            // strings always return true
+            if (type == typeof(string))
+            {
+                // return value as-is
+                obj = textValue;
+                return true;
+            }
+
             // set obj value to null
             obj = null;
 
@@ -152,9 +171,7 @@ namespace Fims.Core
             }
 
             // try to convert the value based on the type
-            if (type == typeof(string))
-                obj = textValue;
-            else if (type == typeof(bool))
+            if (type == typeof(bool))
             {
                 if (bool.TryParse(textValue, out var boolValue))
                     obj = boolValue;

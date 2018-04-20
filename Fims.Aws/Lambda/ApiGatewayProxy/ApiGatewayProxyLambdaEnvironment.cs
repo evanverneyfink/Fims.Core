@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Amazon.Lambda.APIGatewayEvents;
 using Amazon.Lambda.Core;
-using Fims.Core;
 
 namespace Fims.Aws.Lambda.ApiGatewayProxy
 {
@@ -26,15 +25,14 @@ namespace Fims.Aws.Lambda.ApiGatewayProxy
         /// <summary>
         /// Gets a setting from the API Gateway proxy lambda environment
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="key"></param>
         /// <returns></returns>
-        public override T Get<T>(string key)
+        protected override string GetTextValue(string key)
         {
             if (StageVariables.ContainsKey(key))
-                return StageVariables[key].Parse<T>();
+                return StageVariables[key];
 
-            return base.Get<T>(key);
+            return base.GetTextValue(key);
         }
     }
 }

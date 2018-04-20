@@ -108,11 +108,11 @@ namespace Fims.Server.Api
                 else
                 {
                     // read body of request as JSON
-                    var resource = await ResourceSerializer.Deserialize(await RequestContext.ReadBodyAsText(), resourceDescriptor.Type);
+                    var resource = await ResourceSerializer.Deserialize(await RequestContext.ReadBodyAsText());
 
                     // ensure that the provided resource ID matches the ID from the route
                     // in the case of a POST, this should be null
-                    if (resource.Id != resourceDescriptor.Id)
+                    if (resource.Id != null && resource.Id != resourceDescriptor.Url)
                         return RequestContext.Response
                                              .WithStatus(HttpStatusCode.BadRequest)
                                              .WithPlainTextBody(

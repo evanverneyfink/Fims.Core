@@ -53,10 +53,7 @@ namespace Fims.Server.Data
         /// <typeparam name="T"></typeparam>
         /// <param name="document"></param>
         /// <returns></returns>
-        public T GetResource<T>(dynamic document) where T : Resource, new()
-        {
-            return (T)GetResource(typeof(T), document);
-        }
+        public T GetResource<T>(dynamic document) where T : Resource, new() => (T)GetResource(typeof(T), document);
 
         /// <summary>
         /// Gets a resource from a document
@@ -64,9 +61,17 @@ namespace Fims.Server.Data
         /// <param name="type"></param>
         /// <param name="document"></param>
         /// <returns></returns>
-        public Resource GetResource(Type type, dynamic document)
+        public Resource GetResource(Type type, dynamic document) => (Resource)ConvertDocumentToObject(type, document);
+
+        /// <summary>
+        /// Converts a document to an object
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="document"></param>
+        /// <returns></returns>
+        private object ConvertDocumentToObject(Type type, dynamic document)
         {
-            var resource = (Resource)Activator.CreateInstance(type);
+            var resource = Activator.CreateInstance(type);
 
             IDictionary<string, Func<object>> docProps =
                 document is IDictionary<string, object> dict
@@ -106,6 +111,17 @@ namespace Fims.Server.Data
                 }
                 else if (typeof(IEnumerable<Type>).IsAssignableFrom(prop.PropertyType))
                     prop.SetValue(resource, ((IEnumerable<object>)propValue).OfType<string>().Select(s => s.ToResourceType()).ToList());
+                else if (typeof(IEnumerable<object>).IsAssignableFrom(prop.PropertyType))
+                {
+                    var itemType = prop.PropertyType.GenericTypeArguments[0];
+
+                    var childCollection = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(itemType));
+
+                    foreach (var childObj in (IEnumerable<object>)propValue)
+                        childCollection.Add(ConvertDocumentToObject(itemType, childObj));
+
+                    prop.SetValue(resource, childCollection);
+                }
                 else if (prop.PropertyType == typeof(Type))
                     prop.SetValue(resource, propValue.ToString().ToResourceType());
                 else

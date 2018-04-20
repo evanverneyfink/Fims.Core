@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fims.Core\Fims.Core.csproj" />
+    <ProjectReference Include="..\Fims.Json\Fims.Json.csproj" />
+    <ProjectReference Include="..\Fims.Server.LocalDb\Fims.Server.LiteDb.csproj" />
+    <ProjectReference Include="..\Fims.Server\Fims.Server.csproj" />
+    <ProjectReference Include="..\Fims.Services.Files\Fims.Server.Files.csproj" />
+    <ProjectReference Include="..\Fims.Services.Jobs.JobProcessor\Fims.Services.Jobs.JobProcessor.csproj" />
+    <ProjectReference Include="..\Fims.WebApi\Fims.WebApi.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -30,7 +30,7 @@ namespace Fims.WebApi.Services.ServiceRegistry
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
-                app.UseDeveloperExceptionPage();
+                app.UseDeveloperExceptionPage().UseIisExpressUrl();
 
             app.UseFimsWebApi();
         }

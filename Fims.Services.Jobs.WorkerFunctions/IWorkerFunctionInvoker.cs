@@ -9,11 +9,10 @@ namespace Fims.Services.Jobs.WorkerFunctions
         /// <summary>
         /// Invokes a worker function
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <param name="workerFunctionName"></param>
         /// <param name="environment"></param>
-        /// <param name="resource"></param>
+        /// <param name="jobAssignment"></param>
         /// <returns></returns>
-        Task Invoke<T>(string workerFunctionName, IEnvironment environment, T resource) where T : Resource;
+        Task Invoke(string workerFunctionName, IEnvironment environment, JobAssignment jobAssignment);
     }
 }

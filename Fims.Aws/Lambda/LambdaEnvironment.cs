@@ -1,11 +1,9 @@
 ﻿using System;
 using Amazon.Lambda.Core;
-using Fims.Core;
-using Fims.Server;
 
 namespace Fims.Aws.Lambda
 {
-    public class LambdaEnvironment : IEnvironment
+    public class LambdaEnvironment : Server.Environment
     {
         /// <summary>
         /// Instantiates an <see cref="LambdaEnvironment"/>
@@ -22,24 +20,11 @@ namespace Fims.Aws.Lambda
         private ILambdaContext LambdaContext { get; }
 
         /// <summary>
-        /// Gets a setting from the API Gateway proxy lambda environment
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public virtual T Get<T>(string key)
-        {
-            var val = GetEnvironmentVariable(key);
-
-            return val != null ? val.Parse<T>() : default(T);
-        }
-
-        /// <summary>
         /// Gets an environment variable
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        private string GetEnvironmentVariable(string key) =>
+        protected override string GetTextValue(string key) =>
             Environment.GetEnvironmentVariables().Contains(key)
                 ? (string)Environment.GetEnvironmentVariables()[key]
                 : string.Empty;

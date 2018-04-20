@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Fims.Core;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fims.Server.Files
 {
@@ -11,6 +12,8 @@ namespace Fims.Server.Files
         /// <returns></returns>
         public static IServiceCollection AddLocalFileStorage(this IServiceCollection serviceCollection)
         {
+            ResourceTypes.Add<LocalLocator>();
+
             return serviceCollection.AddSingleton<IFileStorage, LocalFileStorage>();
         }
     }

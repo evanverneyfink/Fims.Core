@@ -17,7 +17,11 @@ namespace Fims.Json
         public static IServiceCollection AddBasicJsonSerialization(this IServiceCollection serviceCollection,
                                                                    Action<JsonSerializerSettings> configureSettings = null)
         {
-            var settings = new JsonSerializerSettings {ContractResolver = new CamelCasePropertyNamesContractResolver()};
+            var settings = new JsonSerializerSettings
+            {
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Converters = {new TypeConverter()}
+            };
 
             configureSettings?.Invoke(settings);
 

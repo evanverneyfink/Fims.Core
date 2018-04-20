@@ -99,9 +99,10 @@ namespace Fims.Server.LiteDb
                             ? LiteDB.Query.And(parameters.Select(kvp => LiteDB.Query.EQ(kvp.Key, kvp.Value)).ToArray())
                             : null;
 
+            var collection = GetCollection(typeof(T));
+
             return Task.FromResult(
-                (query != null ? GetCollection(typeof(T)).Find(query) : GetCollection(typeof(T)).FindAll())
-                .Select<BsonDocument, object>(MapResource));
+                (query != null ? collection.Find(query) : collection.FindAll()).Select<BsonDocument, object>(MapResource));
         }
 
         /// <summary>

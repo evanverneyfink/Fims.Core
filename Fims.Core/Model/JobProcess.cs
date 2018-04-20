@@ -14,8 +14,8 @@ namespace Fims.Core.Model
 
         public DateTime? JobStart { get; set; }
 
-        public TimeSpan? JobDuration { get; set; }
-
         public DateTime? JobEnd { get; set; }
+
+        public TimeSpan? JobDuration => JobEnd.HasValue && JobStart.HasValue ? JobEnd.Value - JobStart.Value : default(TimeSpan?);
     }
 }

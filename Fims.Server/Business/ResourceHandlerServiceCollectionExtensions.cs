@@ -12,17 +12,17 @@ namespace Fims.Server.Business
         /// <param name="configureOptions"></param>
         /// <returns></returns>
         public static IServiceCollection AddFimsResourceHandling(this IServiceCollection serviceCollection,
-                                                                 Action<ResourceHandlerRegistryOptions> configureOptions = null)
+                                                                 Action<ResourceHandlerRegistryOptions> configureOptions)
         {
+            // create registry options for service collection
+            var opts = new ResourceHandlerRegistryOptions(serviceCollection);
+
+            // apply any configuration
+            configureOptions?.Invoke(opts);
+
             return
-                serviceCollection.AddScoped(svcProvider =>
-                                 {
-                                     var opts = new ResourceHandlerRegistryOptions(serviceCollection);
-                                     configureOptions?.Invoke(opts);
-                                     return opts.Configure(svcProvider);
-                                 })
-                                 .AddScoped<IResourceHandlerRegistry, ResourceHandlerRegistry>()
-                                 .AddScoped(typeof(IResourceHandler<>), typeof(ResourceHandler<>));
+                serviceCollection.AddScoped<IResourceHandlerRegistry, ResourceHandlerRegistry>()
+                                 .AddScoped(svcProvider => opts.Configure(svcProvider));
         }
 
         /// <summary>

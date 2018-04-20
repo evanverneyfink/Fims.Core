@@ -1,16 +1,14 @@
 ﻿using System;
-using System.IO;
-using System.Reflection;
 using System.Threading.Tasks;
 using Fims.Core.Model;
-using Fims.Server.Api;
+using Fims.Core.Serialization;
 using Fims.Server.Data;
 using Fims.Server.Files;
 using Fims.Services.Jobs.WorkerFunctions;
 
 namespace Fims.Services.Ame.MediaInfo
 {
-    public class MediaInfoWorker : Worker<JobAssignment>
+    public class MediaInfoWorker : Worker<AmeJob>
     {
         #region Constructors
 
@@ -22,30 +20,28 @@ namespace Fims.Services.Ame.MediaInfo
         /// <param name="processRunner"></param>
         /// <param name="mediaInfoOutputConverter"></param>
         /// <param name="fileStorage"></param>
-        /// <param name="resourceDescriptorHelper"></param>
+        /// <param name="resourceSerializer"></param>
+        /// <param name="processLocator"></param>
         public MediaInfoWorker(IResourceDataHandler dataHandler,
                                IMediaInfoAccessibleUrlProvider accessibleUrlProvider,
                                IProcessRunner processRunner,
                                IMediaInfoOutputConverter mediaInfoOutputConverter,
                                IFileStorage fileStorage,
-                               IResourceDescriptorHelper resourceDescriptorHelper)
+                               IResourceSerializer resourceSerializer,
+                               IMediaInfoProcessLocator processLocator)
+            : base(dataHandler)
         {
-            DataHandler = dataHandler;
             AccessibleUrlProvider = accessibleUrlProvider;
             ProcessRunner = processRunner;
             MediaInfoOutputConverter = mediaInfoOutputConverter;
             FileStorage = fileStorage;
-            ResourceDescriptorHelper = resourceDescriptorHelper;
+            ResourceSerializer = resourceSerializer;
+            ProcessLocator = processLocator;
         }
 
         #endregion
 
         #region Properties
-
-        /// <summary>
-        /// Gets the data handler
-        /// </summary>
-        private IResourceDataHandler DataHandler { get; }
 
         /// <summary>
         /// Gets the accessible url provider
@@ -68,94 +64,65 @@ namespace Fims.Services.Ame.MediaInfo
         private IFileStorage FileStorage { get; }
 
         /// <summary>
-        /// Gets the resource url helper
+        /// Gets the resource serializer
         /// </summary>
-        private IResourceDescriptorHelper ResourceDescriptorHelper { get; }
+        private IResourceSerializer ResourceSerializer { get; }
+
+        /// <summary>
+        /// Gets the process locator
+        /// </summary>
+        private IMediaInfoProcessLocator ProcessLocator { get; }
 
         #endregion
 
         #region Methods
 
-        private async Task<Locator> GetLocator(string url)
-        {
-            var uri = new Uri(url, UriKind.Absolute);
-
-            var resourceDescriptor = ResourceDescriptorHelper.GetResourceDescriptor(uri);
-
-            return (Locator)await DataHandler.Get(resourceDescriptor);
-        }
-
         /// <summary>
         /// Runs media info and stores the output to a file
         /// </summary>
         /// <returns></returns>
-        public override async Task Execute(JobAssignment jobAssignment)
+        public override async Task Execute(AmeJob job)
         {
-            // update status and modified date/time
-            jobAssignment.JobProcessStatus = "Running";
-            jobAssignment.DateModified = DateTime.UtcNow;
-
-            // persist the updated job assignment
-            await DataHandler.Update(jobAssignment);
-
-            // get the job process from the job assignment
-            var jobProcess = await DataHandler.Get<JobProcess>(jobAssignment.JobProcess);
-            if (jobProcess == null)
-                throw new Exception("Failed to resolve jobAssignment.jobProcess");
-            
-            // get the job from the job process
-            var job = await DataHandler.Get<Job>(jobProcess.Job.Id);
-            if (job == null)
-                throw new Exception("Failed to resolve jobProcess.job");
-
-            // load the job profile
-            var jobProfile = await DataHandler.Get<JobProfile>(job.JobProfile.Id);
-            if (jobProfile == null)
-                throw new Exception("Failed to resolve job.jobProfile");
-
             // ensure this is a valid profile for this worker
-            if (jobProfile.Label != "ExtractTechnicalMetadata")
-                throw new Exception($"JobProfile '{jobProfile.Label}' not accepted");
-
-            // get the job input
-            var jobInput = await DataHandler.Get<JobParameterBag>(job.JobInput.Id);
-            if (jobInput == null)
-                throw new Exception("Failed to resolve job.jobInput");
+            if (job.JobProfile.Label != "ExtractTechnicalMetadata")
+                throw new Exception($"JobProfile '{job.JobProfile.Label}' not accepted");
 
             // ensure the job specifies input and output locations
-            if (jobInput["fims:inputFile"] == null)
+            if (job.JobInput["inputFile"] == null)
                 throw new Exception("Job does not specify an input location.");
             // ensure the job specifies an output location
-            if (jobInput["fims:outputLocation"] == null)
+            if (job.JobInput["outputLocation"] == null)
                 throw new Exception("Job does not specify an output location.");
-            
+
+            var serializedOutputLocation = job.JobInput["outputLocation"]?.ToString();
+            if (serializedOutputLocation == null)
+                throw new Exception("Failed to resolve jobInput[\"outputLocation\"]");
+
             // get output locator
-            var outputLocation = await GetLocator(jobInput["fims:outputLocation"]?.ToString());
-            if (outputLocation == null)
-                throw new Exception("Failed to resolve jobInput[\"fims:outputLocation\"]");
+            var outputLocation = await ResourceSerializer.Deserialize<Locator>(serializedOutputLocation);
+
+            var serializedInputFile = job.JobInput["inputFile"]?.ToString();
+            if (serializedInputFile == null)
+                throw new Exception("Failed to resolve jobInput[\"inputFile\"]");
 
             // get input locator
-            var inputFile = await GetLocator(jobInput["fims:inputFile"]?.ToString());
-            if (inputFile == null)
-                throw new Exception("Failed to resolve jobInput[\"fims:inputFile\"]");
+            var inputFile = await ResourceSerializer.Deserialize<Locator>(serializedInputFile);
 
             // get the url of the file MediaInfo should use (could be local, S3, etc)
             var accessibleUrl = await AccessibleUrlProvider.GetMediaInfoAccessibleUrl(inputFile);
             if (accessibleUrl == null)
                 throw new Exception("Input file is not accessible to MediaInfo.");
 
-            var result = await ProcessRunner.RunProcess(Path.Combine(Assembly.GetExecutingAssembly().Location, "bin/mediainfo"),
-                                                        "--Output=EBUCore",
-                                                        accessibleUrl);
-
+            // run the media info process
+            var result = await ProcessRunner.RunProcess(ProcessLocator.GetMediaInfoLocation(), "--Output=EBUCore", accessibleUrl);
             if (!string.IsNullOrWhiteSpace(result.StdErr))
                 throw new Exception($"MediaInfo returned one or more errors: {result.StdErr}.");
 
             // convert output to JSON
             var mediaInfoJson = MediaInfoOutputConverter.GetJson(result.StdOut);
 
-            // save JSON to file
-            await FileStorage.SaveFile(outputLocation, Guid.NewGuid().ToString(), mediaInfoJson);
+            // save JSON to file and store the resulting locator in the job output
+            job.JobOutput["outputFile"] = await FileStorage.SaveFile(outputLocation, Guid.NewGuid().ToString(), mediaInfoJson);
         }
 
         #endregion

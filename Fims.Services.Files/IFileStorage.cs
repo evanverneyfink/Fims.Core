@@ -11,6 +11,6 @@ namespace Fims.Server.Files
         /// <param name="locator"></param>
         /// <param name="fileName"></param>
         /// <param name="contents"></param>
-        Task SaveFile(Locator locator, string fileName, string contents);
+        Task<Locator> SaveFile(Locator locator, string fileName, string contents);
     }
 }

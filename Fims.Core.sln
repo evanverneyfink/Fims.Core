@@ -55,11 +55,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web API", "Web API", "{4E87
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.WebApi.Services.ServiceRegistry", "Fims.WebApi.Services.ServiceRegistry\Fims.WebApi.Services.ServiceRegistry.csproj", "{8755BE20-7731-42B9-8E8C-EFCD48641111}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.WebApi", "Fims.WebApi\Fims.WebApi.csproj", "{7E15B97C-89C8-486B-B3E3-6B0B12EC06DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.WebApi", "Fims.WebApi\Fims.WebApi.csproj", "{7E15B97C-89C8-486B-B3E3-6B0B12EC06DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.Server.LiteDb", "Fims.Server.LocalDb\Fims.Server.LiteDb.csproj", "{ECA8B53B-8E37-4F45-BD00-3D3D4BE0F8E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Server.LiteDb", "Fims.Server.LocalDb\Fims.Server.LiteDb.csproj", "{ECA8B53B-8E37-4F45-BD00-3D3D4BE0F8E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.Json", "Fims.Json\Fims.Json.csproj", "{232B5F87-5EB0-4335-8DB2-8A687B73271E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Json", "Fims.Json\Fims.Json.csproj", "{232B5F87-5EB0-4335-8DB2-8A687B73271E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.WebApi.Services.Ame.MediaInfo", "Fims.WebApi.Services.Ame.MediaInfo\Fims.WebApi.Services.Ame.MediaInfo.csproj", "{447DE004-7CE1-4148-A02C-73E5BEB63989}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.WebApi.Services.Jobs.JobProcessor", "Fims.WebApi.Services.Jobs.JobProcessor\Fims.WebApi.Services.Jobs.JobProcessor.csproj", "{3D42FC99-54DC-4FE0-A39D-475CE7409D7F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.WebApi.Services.Jobs.JobRepository", "Fims.WebApi.Services.Jobs.JobRepository\Fims.WebApi.Services.Jobs.JobRepository.csproj", "{B5670B2C-B82E-4EC4-9993-BD4A7F5C1390}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -155,6 +161,18 @@ Global
 		{232B5F87-5EB0-4335-8DB2-8A687B73271E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{232B5F87-5EB0-4335-8DB2-8A687B73271E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{232B5F87-5EB0-4335-8DB2-8A687B73271E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{447DE004-7CE1-4148-A02C-73E5BEB63989}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{447DE004-7CE1-4148-A02C-73E5BEB63989}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{447DE004-7CE1-4148-A02C-73E5BEB63989}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{447DE004-7CE1-4148-A02C-73E5BEB63989}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D42FC99-54DC-4FE0-A39D-475CE7409D7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D42FC99-54DC-4FE0-A39D-475CE7409D7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D42FC99-54DC-4FE0-A39D-475CE7409D7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D42FC99-54DC-4FE0-A39D-475CE7409D7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5670B2C-B82E-4EC4-9993-BD4A7F5C1390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5670B2C-B82E-4EC4-9993-BD4A7F5C1390}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5670B2C-B82E-4EC4-9993-BD4A7F5C1390}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5670B2C-B82E-4EC4-9993-BD4A7F5C1390}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -185,6 +203,9 @@ Global
 		{7E15B97C-89C8-486B-B3E3-6B0B12EC06DE} = {4E879AA7-D4E9-4DE9-A6ED-95A67AA04C7D}
 		{ECA8B53B-8E37-4F45-BD00-3D3D4BE0F8E2} = {840D1A93-FBF7-450A-9C0E-5666FD42CEEE}
 		{232B5F87-5EB0-4335-8DB2-8A687B73271E} = {840D1A93-FBF7-450A-9C0E-5666FD42CEEE}
+		{447DE004-7CE1-4148-A02C-73E5BEB63989} = {4E879AA7-D4E9-4DE9-A6ED-95A67AA04C7D}
+		{3D42FC99-54DC-4FE0-A39D-475CE7409D7F} = {4E879AA7-D4E9-4DE9-A6ED-95A67AA04C7D}
+		{B5670B2C-B82E-4EC4-9993-BD4A7F5C1390} = {4E879AA7-D4E9-4DE9-A6ED-95A67AA04C7D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3445F93-A656-4C90-8AC9-8376F46347D8}

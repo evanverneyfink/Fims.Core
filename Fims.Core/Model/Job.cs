@@ -1,4 +1,7 @@
-﻿namespace Fims.Core.Model
+﻿using System.Collections.Generic;
+using System.Dynamic;
+
+namespace Fims.Core.Model
 {
     public class Job : Resource
     {
@@ -12,8 +15,8 @@
 
         public string JobProcess { get; set; }
 
-        public JobParameterBag JobInput { get; set; }
+        public IDictionary<string, object> JobInput { get; set; } = new Dictionary<string, object>();
 
-        public JobParameterBag JobOutput { get; set; }
+        public IDictionary<string, object> JobOutput { get; set; } = new Dictionary<string, object>();
     }
 }

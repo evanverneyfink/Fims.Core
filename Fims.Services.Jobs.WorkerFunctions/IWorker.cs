@@ -1,17 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Fims.Core.Model;
 
 namespace Fims.Services.Jobs.WorkerFunctions
 {
     public interface IWorker
     {
-        Task Execute(object input);
-    }
-
-    public interface IWorker<in T> : IWorker
-    {
-        Task Execute(T input);
+        /// <summary>
+        /// Executes work for the given input
+        /// </summary>
+        /// <param name="jobAssignment"></param>
+        /// <returns></returns>
+        Task Execute(JobAssignment jobAssignment);
     }
 }

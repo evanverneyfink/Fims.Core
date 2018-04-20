@@ -37,7 +37,7 @@ namespace Fims.Aws.DynamoDb
             var jObj = JObject.Parse(json).Unwrap();
             Console.WriteLine("[DynamoDbExtensions.ToObject] Unwrapped JSON = {0}", jObj);
 
-            return await serializer.Deserialize(jObj.ToString(), type);
+            return await serializer.Deserialize(jObj.ToString());
         }
 
         /// <summary>
