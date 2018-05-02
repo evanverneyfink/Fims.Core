@@ -35,8 +35,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Services.Jobs.JobProce
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Services.Jobs.WorkerFunctions", "Fims.Services.Jobs.WorkerFunctions\Fims.Services.Jobs.WorkerFunctions.csproj", "{3A05DE10-8672-4EA7-AEE8-F00ECCC612C7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Server.Files", "Fims.Services.Files\Fims.Server.Files.csproj", "{62637E8D-45FF-4E4B-9AC9-1D4D2C927CD3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Aws.Services.Ame.MediaInfo", "Fims.Aws.Services.Ame.MediaInfo\Fims.Aws.Services.Ame.MediaInfo.csproj", "{1334887C-49AA-4D04-8FDA-9C5435ABAA80}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Services.ServiceRegistry", "Fims.Services.ServiceRegistry\Fims.Services.ServiceRegistry.csproj", "{8E7CBE97-ACC2-4728-8F0D-9C918A148A08}"
@@ -61,11 +59,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Server.LiteDb", "Fims.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Json", "Fims.Json\Fims.Json.csproj", "{232B5F87-5EB0-4335-8DB2-8A687B73271E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.WebApi.Services.Ame.MediaInfo", "Fims.WebApi.Services.Ame.MediaInfo\Fims.WebApi.Services.Ame.MediaInfo.csproj", "{447DE004-7CE1-4148-A02C-73E5BEB63989}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.WebApi.Services.Ame.MediaInfo", "Fims.WebApi.Services.Ame.MediaInfo\Fims.WebApi.Services.Ame.MediaInfo.csproj", "{447DE004-7CE1-4148-A02C-73E5BEB63989}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.WebApi.Services.Jobs.JobProcessor", "Fims.WebApi.Services.Jobs.JobProcessor\Fims.WebApi.Services.Jobs.JobProcessor.csproj", "{3D42FC99-54DC-4FE0-A39D-475CE7409D7F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.WebApi.Services.Jobs.JobProcessor", "Fims.WebApi.Services.Jobs.JobProcessor\Fims.WebApi.Services.Jobs.JobProcessor.csproj", "{3D42FC99-54DC-4FE0-A39D-475CE7409D7F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.WebApi.Services.Jobs.JobRepository", "Fims.WebApi.Services.Jobs.JobRepository\Fims.WebApi.Services.Jobs.JobRepository.csproj", "{B5670B2C-B82E-4EC4-9993-BD4A7F5C1390}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.WebApi.Services.Jobs.JobRepository", "Fims.WebApi.Services.Jobs.JobRepository\Fims.WebApi.Services.Jobs.JobRepository.csproj", "{B5670B2C-B82E-4EC4-9993-BD4A7F5C1390}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -113,10 +111,6 @@ Global
 		{3A05DE10-8672-4EA7-AEE8-F00ECCC612C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A05DE10-8672-4EA7-AEE8-F00ECCC612C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A05DE10-8672-4EA7-AEE8-F00ECCC612C7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{62637E8D-45FF-4E4B-9AC9-1D4D2C927CD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{62637E8D-45FF-4E4B-9AC9-1D4D2C927CD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{62637E8D-45FF-4E4B-9AC9-1D4D2C927CD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{62637E8D-45FF-4E4B-9AC9-1D4D2C927CD3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1334887C-49AA-4D04-8FDA-9C5435ABAA80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1334887C-49AA-4D04-8FDA-9C5435ABAA80}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1334887C-49AA-4D04-8FDA-9C5435ABAA80}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -190,7 +184,6 @@ Global
 		{AD2F4CB7-3613-4966-A06D-04270AC8F539} = {FACB1C9F-2C28-4288-B5C4-A29B5FCEAA44}
 		{600F0C19-EDC6-4963-A99E-F038E2B7EB60} = {FACB1C9F-2C28-4288-B5C4-A29B5FCEAA44}
 		{3A05DE10-8672-4EA7-AEE8-F00ECCC612C7} = {FACB1C9F-2C28-4288-B5C4-A29B5FCEAA44}
-		{62637E8D-45FF-4E4B-9AC9-1D4D2C927CD3} = {840D1A93-FBF7-450A-9C0E-5666FD42CEEE}
 		{1334887C-49AA-4D04-8FDA-9C5435ABAA80} = {9DCA551B-141E-4DA6-A3C4-FEF9E0196E4A}
 		{8E7CBE97-ACC2-4728-8F0D-9C918A148A08} = {FACB1C9F-2C28-4288-B5C4-A29B5FCEAA44}
 		{9DE08D96-5ED3-407A-BA51-834BFA3A199A} = {9DCA551B-141E-4DA6-A3C4-FEF9E0196E4A}

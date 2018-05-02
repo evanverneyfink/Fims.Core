@@ -23,14 +23,11 @@ namespace Fims.Server.Business
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public bool IsSupported(Type type) => Options.SupportedTypes.Contains(type);
+        public bool IsSupported(Type type) => Options.IsSupported(type);
 
         /// <summary>
         /// Delegate for getting the default hander
         /// </summary>
-        public IResourceHandler Get(Type type)
-        {
-            return Options.CreateHandler(type);
-        }
+        public IResourceHandler Get(Type type) => Options.CreateHandler?.Invoke(type) ?? Options.DefaultCreateHandler(type);
     }
 }

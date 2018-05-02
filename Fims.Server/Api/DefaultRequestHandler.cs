@@ -180,26 +180,11 @@ namespace Fims.Server.Api
         /// <returns></returns>
         private async Task HandlePost(IResourceHandler resourceHandler, ResourceDescriptor resourceDescriptor, Resource resource)
         {
-            try
-            {
-                Logger.Info("Creating resource {0}...", resource.Id);
-                Logger.Debug("Resource JSON: {0}", resource);
-
-                // create the resource
-                var result = await resourceHandler.Create(resourceDescriptor, resource);
-
-                Logger.Info("Successfully created resource {0}.", resource.Id);
-
-                var responseJson = ResourceSerializer.Serialize(result);
-                Logger.Debug("Response JSON: {0}", responseJson);
-
-                // return the new object rendered as JSON
-                RequestContext.Response.WithStatus(HttpStatusCode.OK).WithJsonBody(responseJson);
-            }
-            catch (Exception e)
-            {
-                RequestContext.Response.WithStatus(HttpStatusCode.InternalServerError).WithPlainTextBody(e.ToString());
-            }
+            // create the resource
+            var result = await resourceHandler.Create(resourceDescriptor, resource);
+            
+            // return the new object rendered as JSON
+            RequestContext.Response.WithStatus(HttpStatusCode.OK).WithJsonBody(ResourceSerializer.Serialize(result));
         }
 
         /// <summary>
@@ -211,26 +196,19 @@ namespace Fims.Server.Api
         /// <returns></returns>
         private async Task HandlePut(IResourceHandler resourceHandler, ResourceDescriptor resourceDescriptor, Resource resource)
         {
-            try
+            // get the object first to ensure it exists
+            var existing = await resourceHandler.Get(resourceDescriptor);
+            if (existing == null)
             {
-                // get the object first to ensure it exists
-                var existing = await resourceHandler.Get(resourceDescriptor);
-                if (existing == null)
-                {
-                    RequestContext.Response.WithStatus(HttpStatusCode.NotFound);
-                    return;
-                }
+                RequestContext.Response.WithStatus(HttpStatusCode.NotFound);
+                return;
+            }
 
-                // update resource using handler
-                var result = await resourceHandler.Update(resourceDescriptor, resource);
-                
-                // return the updated object rendered as JSON
-                RequestContext.Response.WithStatus(HttpStatusCode.OK).WithJsonBody(ResourceSerializer.Serialize(result));
-            }
-            catch (Exception e)
-            {
-                RequestContext.Response.WithStatus(HttpStatusCode.InternalServerError).WithPlainTextBody(e.ToString());
-            }
+            // update resource using handler
+            var result = await resourceHandler.Update(resourceDescriptor, resource);
+
+            // return the updated object rendered as JSON
+            RequestContext.Response.WithStatus(HttpStatusCode.OK).WithJsonBody(ResourceSerializer.Serialize(result));
         }
 
         /// <summary>

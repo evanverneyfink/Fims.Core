@@ -22,31 +22,31 @@ namespace Fims.Server.Business
         private IServiceCollection ServiceCollection { get; }
 
         /// <summary>
-        /// Gets the collection of supported types
+        /// Gets the collection of handler type mappings
         /// </summary>
-        internal List<Type> SupportedTypes { get; } = new List<Type>();
+        internal Dictionary<Type, Type> HandlerTypeMappings { get; } = new Dictionary<Type, Type>();
         
         /// <summary>
-        /// Delegate for getting the default hander
+        /// Gets or sets the custom delegate used to create a handler
         /// </summary>
-        internal Func<Type, IResourceHandler> CreateHandler { get; set; }
+        public Func<Type, IResourceHandler> CreateHandler { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default delegate used to create a handler
+        /// </summary>
+        public Func<Type, IResourceHandler> DefaultCreateHandler { get; private set; }
 
         /// <summary>
         /// Registers a resource handler
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="createHandler"></param>
         /// <param name="serviceLifetime"></param>
         /// <returns></returns>
-        public ResourceHandlerRegistryOptions Register<T>(Func<IServiceProvider, IResourceHandler<T>> createHandler = null,
-                                                          ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
+        public ResourceHandlerRegistryOptions Register<T>(ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
             where T : Resource, new()
         {
-            SupportedTypes.Add(typeof(T));
-            if (createHandler != null)
-                ServiceCollection.Add(new ServiceDescriptor(typeof(IResourceHandler<T>), createHandler, serviceLifetime));
-            else
-                ServiceCollection.Add(new ServiceDescriptor(typeof(IResourceHandler<T>), typeof(ResourceHandler<T>), serviceLifetime));
+            HandlerTypeMappings[typeof(T)] = typeof(ResourceHandler<T>);
+            ServiceCollection.AddScoped(typeof(ResourceHandler<T>));
             return this;
         }
 
@@ -59,10 +59,10 @@ namespace Fims.Server.Business
         /// <returns></returns>
         public ResourceHandlerRegistryOptions Register<TResource, THandler>(ServiceLifetime serviceLifetime = ServiceLifetime.Scoped)
             where TResource : Resource, new()
-            where THandler : IResourceHandler<TResource>
+            where THandler : IResourceHandler
         {
-            SupportedTypes.Add(typeof(TResource));
-            ServiceCollection.Add(new ServiceDescriptor(typeof(IResourceHandler<TResource>), typeof(THandler), serviceLifetime));
+            HandlerTypeMappings[typeof(TResource)] = typeof(THandler);
+            ServiceCollection.AddScoped(typeof(THandler));
             return this;
         }
 
@@ -72,24 +72,57 @@ namespace Fims.Server.Business
         /// <returns></returns>
         internal ResourceHandlerRegistryOptions Configure(IServiceProvider svcProvider)
         {
-            if (CreateHandler == null)
-                CreateHandler =
-                    t =>
-                    {
-                        var logger = svcProvider.GetService<ILogger>();
-                        logger.Info("Using default resource handler for resource type {0}", t.Name);
+            DefaultCreateHandler =
+                t =>
+                {
+                    var logger = svcProvider.GetService<ILogger>();
+                    logger.Info("Using default resource handler for resource type {0}", t.Name);
 
-                        var handlerType = typeof(IResourceHandler<>).MakeGenericType(t);
+                    // get the handler type for the provided resource type
+                    var handlerType = GetHandlerType(t);
 
-                        var handler = (IResourceHandler)svcProvider.GetService(handlerType);
-                        if (handler == null)
-                            logger.Warning(
-                                "Failed to create default handler for resource type {0}. Service provider was unable to resolve generic type.", t.Name);
+                    var handler = (IResourceHandler)svcProvider.GetService(handlerType);
+                    if (handler == null)
+                        logger.Warning(
+                            "Failed to create default handler for resource type {ResourceType}. Service provider was unable to resolve handler type {ResourceHandlerType}.",
+                            t.Name,
+                            handlerType);
 
-                        return handler;
-                    };
+                    return handler;
+                };
 
             return this;
+        }
+
+        /// <summary>
+        /// Checks if the provided type is supported
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        internal bool IsSupported(Type type) => GetHandlerType(type) != null;
+
+        /// <summary>
+        /// Gets the handler type for a given resource type
+        /// </summary>
+        /// <param name="resourceType"></param>
+        /// <returns></returns>
+        private Type GetHandlerType(Type resourceType)
+        {
+            Type closestMatch = null;
+
+            foreach (var registeredType in HandlerTypeMappings.Keys)
+            {
+                // if the registered type is a base class of, or an exact match with, the specified resource type, it's a match
+                // if another match was already found, but it's a base class of this match, override it with this one
+                if (registeredType.IsAssignableFrom(resourceType) && (closestMatch == null || closestMatch.IsAssignableFrom(registeredType)))
+                    closestMatch = registeredType;
+
+                // if it's an exact match, we can stop looking
+                if (closestMatch == resourceType)
+                    break;
+            }
+
+            return closestMatch != null ? HandlerTypeMappings[closestMatch] : null;
         }
     }
 }

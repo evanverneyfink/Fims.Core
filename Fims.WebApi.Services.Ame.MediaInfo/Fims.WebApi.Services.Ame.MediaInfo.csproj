@@ -18,7 +18,6 @@
     <ProjectReference Include="..\Fims.Server.LocalDb\Fims.Server.LiteDb.csproj" />
     <ProjectReference Include="..\Fims.Server\Fims.Server.csproj" />
     <ProjectReference Include="..\Fims.Services.Ame.MediaInfo\Fims.Services.Ame.MediaInfo.csproj" />
-    <ProjectReference Include="..\Fims.Services.Files\Fims.Server.Files.csproj" />
     <ProjectReference Include="..\Fims.WebApi\Fims.WebApi.csproj" />
   </ItemGroup>
 

@@ -47,11 +47,7 @@ namespace Fims.Server.Data
         /// <param name="resourceDescriptor"></param>
         /// <returns></returns>
         public async Task<T> Get<T>(ResourceDescriptor resourceDescriptor) where T : Resource, new()
-        {
-            var resource = await Repository.Get<T>(resourceDescriptor.Url);
-
-            return DocumentHelper.GetResource<T>(resource);
-        }
+            => (T)await Get(resourceDescriptor);
 
         /// <summary>
         /// Queries resources of type <see cref="T"/> using the provided criteria, in the form of key/value pairs
@@ -85,11 +81,7 @@ namespace Fims.Server.Data
         /// <param name="resource"></param>
         /// <returns></returns>
         public async Task<T> Create<T>(ResourceDescriptor resourceDescriptor, T resource) where T : Resource, new()
-        {
-            var newResource = await Repository.Create<T>(DocumentHelper.GetDocument(resource));
-
-            return DocumentHelper.GetResource<T>(newResource);
-        }
+            => (T)await Create(resourceDescriptor, (Resource)resource);
 
         /// <summary>
         /// Updates a resource
@@ -111,11 +103,7 @@ namespace Fims.Server.Data
         /// <param name="resource"></param>
         /// <returns></returns>
         public async Task<T> Update<T>(ResourceDescriptor resourceDescriptor, T resource) where T : Resource, new()
-        {
-            var newResource = await Repository.Update<T>(DocumentHelper.GetDocument(resource));
-
-            return DocumentHelper.GetResource<T>(newResource);
-        }
+            => (T)await Update(resourceDescriptor, (Resource)resource);
 
         /// <summary>
         /// Deletes a resource by its ID
@@ -123,8 +111,6 @@ namespace Fims.Server.Data
         /// <param name="resourceDescriptor"></param>
         /// <returns></returns>
         public Task Delete<T>(ResourceDescriptor resourceDescriptor) where T : Resource, new()
-        {
-            return Repository.Delete<T>(resourceDescriptor.Id);
-        }
+            => Repository.Delete(resourceDescriptor.Type, resourceDescriptor.Id);
     }
 }

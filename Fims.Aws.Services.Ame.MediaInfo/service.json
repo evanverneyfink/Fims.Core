@@ -1,4 +1,5 @@
 {
+  "type": "Service",
   "label": "MediaInfo AME Service",
   "hasResource": [
     {
@@ -6,7 +7,9 @@
       "httpEndpoint": "{{{serviceUrl}}}"
     }
   ],
-  "acceptsJobType": "AmeJob",
+  "acceptsJobType": [
+    "AmeJob"
+  ],
   "acceptsJobProfile": [
     {
       "type": "JobProfile",

@@ -13,7 +13,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Fims.Core\Fims.Core.csproj" />
     <ProjectReference Include="..\Fims.Server\Fims.Server.csproj" />
-    <ProjectReference Include="..\Fims.Services.Files\Fims.Server.Files.csproj" />
     <ProjectReference Include="..\Fims.Services.Jobs.WorkerFunctions\Fims.Services.Jobs.WorkerFunctions.csproj" />
   </ItemGroup>
 

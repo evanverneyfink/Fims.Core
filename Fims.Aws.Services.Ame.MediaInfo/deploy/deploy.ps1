@@ -7,7 +7,7 @@ Compress-Archive -Path ..\bin\Release\netcoreapp2.0\publish\* -DestinationPath .
 cd terraform
 terraform init -input=false
 terraform apply -auto-approve -var-file="private.tfvars" -var-file="public.tfvars"
-cd..
+cd ..
 
 # register the service and its profiles
-Invoke-Expression "./register.ps1"
+Invoke-Expression -Command "./register.ps1"

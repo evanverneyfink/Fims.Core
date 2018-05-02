@@ -7,9 +7,9 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using Fims.Core.Model;
-using Fims.Core.Serialization;
 using Fims.Server;
 using Fims.Server.Data;
+using Microsoft.Extensions.Options;
 using DynamoDbTable = Amazon.DynamoDBv2.DocumentModel.Table;
 
 namespace Fims.Aws.DynamoDb
@@ -21,18 +21,24 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="tableConfigProvider"></param>
-        /// <param name="resourceSerializer"></param>
-        public DynamoDbRepository(ILogger logger, IDynamoDbTableConfigProvider tableConfigProvider, IResourceSerializer resourceSerializer)
+        /// <param name="options"></param>
+        public DynamoDbRepository(ILogger logger,
+                                  IDynamoDbTableConfigProvider tableConfigProvider,
+                                  IOptions<DynamoDbOptions> options)
         {
             Logger = logger;
             TableConfigProvider = tableConfigProvider;
-            ResourceSerializer = resourceSerializer;
+
+            // create client using credentials, if provided
+            var region = options.Value?.RegionEndpoint;
+            var creds = options.Value?.Credentials;
+            DynamoDb = creds != null ? new AmazonDynamoDBClient(creds, region) : new AmazonDynamoDBClient();
         }
 
         /// <summary>
         /// Gets the DynamoDB client
         /// </summary>
-        private IAmazonDynamoDB DynamoDb { get; } = new AmazonDynamoDBClient();
+        private IAmazonDynamoDB DynamoDb { get; }
 
         /// <summary>
         /// Gets the logger
@@ -45,18 +51,32 @@ namespace Fims.Aws.DynamoDb
         private IDynamoDbTableConfigProvider TableConfigProvider { get; }
 
         /// <summary>
-        /// Gets the resource serializer
-        /// </summary>
-        private IResourceSerializer ResourceSerializer { get; }
-
-        /// <summary>
         /// Gets the DynamoDB table
         /// </summary>
         private async Task<DynamoDbTable> Table(Type type)
         {
-            var tableName = TableConfigProvider.GetTableName(type);
-            var hashKeyName = TableConfigProvider.GetTableHashKeyName(type);
-            var rangeKeyName = TableConfigProvider.GetTableRangeKeyName(type);
+            return await TableWithName(TableConfigProvider.GetTableName(type));
+        }
+        
+        /// <summary>
+        /// Gets the DynamoDB table
+        /// </summary>
+        /// <param name="typeName"></param>
+        /// <returns></returns>
+        private async Task<DynamoDbTable> Table(string typeName)
+        {
+            return await TableWithName(TableConfigProvider.GetTableName(typeName));
+        }
+
+        /// <summary>
+        /// Gets the DynamoDB table
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <returns></returns>
+        private async Task<DynamoDbTable> TableWithName(string tableName)
+        {
+            var hashKeyName = TableConfigProvider.GetTableHashKeyName(tableName);
+            var rangeKeyName = TableConfigProvider.GetTableRangeKeyName(tableName);
 
             Logger.Debug("Checking if table '{0}' exists in DynamoDB...", tableName);
 
@@ -64,8 +84,12 @@ namespace Fims.Aws.DynamoDb
             {
                 if (!DynamoDbTable.TryLoadTable(DynamoDb, tableName, out var table))
                 {
+                    // if we failed to load the table, this is basically a retry that will throw an exception.
+                    // The expectation is that this will expose whatever error caused the TryLoadTable method
+                    // to return false, but if for some reason it happens to succed on retry, that also works.
                     if (!TableConfigProvider.CreateIfNotExists)
-                        throw new Exception($"Table {tableName} does not exist in DynamoDB.");
+                        return DynamoDbTable.LoadTable(DynamoDb, tableName);
+                        //throw new Exception($"Table {tableName} does not exist in DynamoDB.");
 
                     Logger.Info("Table '{0}' does not exist in DynamoDB. Creating it now...", tableName);
 
@@ -111,7 +135,7 @@ namespace Fims.Aws.DynamoDb
             }
             catch (Exception exception)
             {
-                Logger.Error($"An error occurred loading the DynamoDB table for type {type.Name}.", exception);
+                Logger.Error($"An error occurred loading the DynamoDB table for type {tableName}.", exception);
                 throw;
             }
         }
@@ -122,17 +146,33 @@ namespace Fims.Aws.DynamoDb
         /// <param name="type"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<dynamic> Get(Type type, string id)
+        public async Task<dynamic> Get(Type type, string id) => await Get(await Table(type), type.Name, id);
+
+        /// <summary>
+        /// Gets a resource by its type and ID
+        /// </summary>
+        /// <param name="typeName"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private async Task<dynamic> Get(string typeName, string id) => await Get(await Table(typeName), typeName, id);
+
+        /// <summary>
+        /// Gets a resource of a given type and with the provided id from a given table
+        /// </summary>
+        /// <param name="table"></param>
+        /// <param name="typeName"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private async Task<dynamic> Get(DynamoDbTable table, string typeName, string id)
         {
-            var table = await Table(type);
-            var hashKey = new Primitive($"{type.Name}");
+            var hashKey = new Primitive($"{typeName}");
             var rangeKey = new Primitive(id);
 
             Logger.Debug("Getting item with hash key {0} and range key {1} from table {2}...", hashKey, rangeKey, table.TableName);
 
             var result = await table.GetItemAsync(hashKey, rangeKey);
 
-            return result != null ? await ResourceSerializer.ToObject(result, type) : null;
+            return result != null ? DynamoDbDocumentHelper.ToObject(result) : null;
         }
 
         /// <summary>
@@ -142,7 +182,7 @@ namespace Fims.Aws.DynamoDb
         /// <returns></returns>
         public async Task<dynamic> Get<T>(string id) where T : Resource, new()
         {
-            return (T)await Get(typeof(T), id);
+            return await Get(typeof(T), id);
         }
 
         /// <summary>
@@ -152,9 +192,9 @@ namespace Fims.Aws.DynamoDb
         /// <returns></returns>
         public async Task<IEnumerable<dynamic>> Query<T>(IDictionary<string, string> parameters) where T : Resource, new()
         {
-            return await Task.WhenAll(
-                       (await (await Table(typeof(T))).Query(new Primitive(typeof(T).Name), parameters.ToQueryFilter()).GetRemainingAsync())
-                       .Select(d => ResourceSerializer.ToObject<T>(d)));
+            return
+                (await (await Table(typeof(T))).Query(new Primitive(typeof(T).Name), parameters.ToQueryFilter()).GetRemainingAsync())
+                .Select(d => DynamoDbDocumentHelper.ToObject(d));
         }
 
         /// <summary>
@@ -164,7 +204,7 @@ namespace Fims.Aws.DynamoDb
         /// <returns></returns>
         public Task<dynamic> Create<T>(dynamic resource) where T : Resource, new()
         {
-            return CreateOrUpdate(resource);
+            return CreateOrUpdate<T>(resource);
         }
 
         /// <summary>
@@ -185,7 +225,7 @@ namespace Fims.Aws.DynamoDb
         /// <returns></returns>
         public Task<dynamic> Update<T>(dynamic resource) where T : Resource, new()
         {
-            return CreateOrUpdate(resource);
+            return CreateOrUpdate<T>(resource);
         }
 
         /// <summary>
@@ -200,13 +240,14 @@ namespace Fims.Aws.DynamoDb
         }
 
         /// <summary>
-        /// Deletes a resource of type <see cref="T"/> by its ID
+        /// Deletes a resource of type by its ID
         /// </summary>
+        /// <param name="type"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task Delete<T>(string id) where T : Resource, new()
+        public async Task Delete(Type type, string id)
         {
-            await (await Table(typeof(T))).DeleteItemAsync(new Primitive(id));
+            await (await Table(type)).DeleteItemAsync(new Primitive(id));
         }
 
         /// <summary>
@@ -215,9 +256,9 @@ namespace Fims.Aws.DynamoDb
         /// <typeparam name="T"></typeparam>
         /// <param name="resource"></param>
         /// <returns></returns>
-        private async Task<T> CreateOrUpdate<T>(T resource) where T : Resource, new()
+        private async Task<T> CreateOrUpdate<T>(dynamic resource) where T : Resource, new()
         {
-            await (await Table(typeof(T))).PutItemAsync(ResourceSerializer.ToDocument(resource));
+            await (await Table(typeof(T))).PutItemAsync(DynamoDbDocumentHelper.ToDocument(resource));
 
             return await Get<T>(resource.Id);
         }
@@ -227,11 +268,11 @@ namespace Fims.Aws.DynamoDb
         /// </summary>
         /// <param name="resource"></param>
         /// <returns></returns>
-        private async Task<Resource> CreateOrUpdate(Resource resource)
+        private async Task<dynamic> CreateOrUpdate(dynamic resource)
         {
-            await (await Table(resource.GetType())).PutItemAsync(ResourceSerializer.ToDocument(resource));
-
-            return await Get(resource.GetType(), resource.Id);
+            await (await Table(resource.Type)).PutItemAsync(DynamoDbDocumentHelper.ToDocument(resource));
+            
+            return await Get(resource.Type, resource.Id);
         }
     }
 }

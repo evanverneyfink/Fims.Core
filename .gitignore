@@ -262,3 +262,4 @@ __pycache__/
 
 # Variables 
 **/*private.tfvars
+/Fims.WebApi.Services.ServiceRegistry/appSettings.json

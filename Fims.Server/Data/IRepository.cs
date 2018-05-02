@@ -60,10 +60,11 @@ namespace Fims.Server.Data
         Task<dynamic> Update(Type type, dynamic resource);
 
         /// <summary>
-        /// Deletes a resource of type <see cref="T"/> by its ID
+        /// Deletes a resource of type by its ID
         /// </summary>
+        /// <param name="type"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task Delete<T>(string id) where T : Resource, new();
+        Task Delete(Type type, string id);
     }
 }

@@ -12,6 +12,13 @@ namespace Fims.Aws.DynamoDb
         /// <summary>
         /// Gets the table name for a type
         /// </summary>
+        /// <param name="typeName"></param>
+        /// <returns></returns>
+        string GetTableName(string typeName);
+
+        /// <summary>
+        /// Gets the table name for a type
+        /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
         string GetTableName(Type type);
@@ -19,15 +26,15 @@ namespace Fims.Aws.DynamoDb
         /// <summary>
         /// Gets the name of the hash key for a table of the specified type
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="tableName"></param>
         /// <returns></returns>
-        string GetTableHashKeyName(Type type);
+        string GetTableHashKeyName(string tableName);
 
         /// <summary>
         /// Gets the name of the sort key for a table of the specified type
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="tableName"></param>
         /// <returns></returns>
-        string GetTableRangeKeyName(Type type);
+        string GetTableRangeKeyName(string tableName);
     }
 }

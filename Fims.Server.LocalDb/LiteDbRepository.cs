@@ -152,13 +152,13 @@ namespace Fims.Server.LiteDb
         }
 
         /// <summary>
-        /// Deletes a resource of type <see cref="T"/> by its ID
+        /// Deletes a resource of type by its ID
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public Task Delete<T>(string id) where T : Resource, new()
+        public Task Delete(Type type, string id)
         {
-            GetCollection<T>().Delete(id);
+            GetCollection(type).Delete(id);
             return Task.CompletedTask;
         }
 

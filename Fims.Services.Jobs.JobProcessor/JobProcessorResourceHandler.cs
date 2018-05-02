@@ -49,6 +49,9 @@ namespace Fims.Services.Jobs.JobProcessor
                 // validate the job before processing
                 job.Validate();
 
+                // set the job process ID
+                job.JobProcess = jobProcess.Id;
+
                 // get all services
                 var services = await DataHandler.Query<Service>(
                                    ResourceDescriptor.FromUrl<Service>(Environment.ServiceRegistryUrl().TrimEnd('/') + "/Services"));
@@ -97,7 +100,7 @@ namespace Fims.Services.Jobs.JobProcessor
                 // update the job
                 try
                 {
-                    await DataHandler.Update(ResourceDescriptor.FromUrl<Job>(job.Id), job);
+                    await DataHandler.Update(job);
                 }
                 catch
                 {

@@ -19,6 +19,11 @@ $jobProfiles = ConvertFrom-Json $jobProfilesJson
 # keep a collection of available profiles
 $jobProfileUrls = New-Object System.Collections.ArrayList
 
+Foreach ($tmp in $jobProfiles)
+{
+	Write-Host "Found JobProfile: "$tmp.label
+}
+
 # create or update each job profile
 Foreach ($jobProfile in $service.acceptsJobProfile)
 {
@@ -32,8 +37,9 @@ Foreach ($jobProfile in $service.acceptsJobProfile)
 	If ($existingJobProfile -eq $null)
 	{
 		# do a POST to create the new job profile and read the JSON response as an object
-		$jobProfileResponseJson = Invoke-RestMethod -Method POST -Uri $serviceRegistryUrl"/JobProfiles" -Body $jobProfileJson
-		$jobProfileResponse = ConvertFrom-Json $jobProfileResponseJson
+		$jobProfileResponse = Invoke-RestMethod -Method POST -Uri $serviceRegistryUrl"/JobProfiles" -Body $jobProfileJson
+		# Write-Host "Got newly-created job profile JSON: "$jobProfileResponseJson
+		# $jobProfileResponse = ConvertFrom-Json $jobProfileResponseJson
 
 		# store the url of the new job profile
 		$jobProfileUrls.Add($jobProfileResponse.id)
@@ -56,11 +62,11 @@ Write-Host $service
 $serviceJson = ConvertTo-Json $service
 
 # get existing services
-$servicesJson = Invoke-RestMethod -Method GET -Uri $serviceRegistryUrl"/Services"
+$servicesJson = Invoke-WebRequest -Method GET -Uri $serviceRegistryUrl"/Services"
 $services = ConvertFrom-Json $servicesJson
 
 # check if the service already exists
-$existingService = Where-Object -InputObject $services -Property label -Value $service.label
+$existingService = Where-Object -InputObject $services -Property label -eq $service.label
 
 # register the service with the service registry
 If ($existingService -eq $null)

@@ -17,7 +17,6 @@
     <ProjectReference Include="..\Fims.Json\Fims.Json.csproj" />
     <ProjectReference Include="..\Fims.Server.LocalDb\Fims.Server.LiteDb.csproj" />
     <ProjectReference Include="..\Fims.Server\Fims.Server.csproj" />
-    <ProjectReference Include="..\Fims.Services.Files\Fims.Server.Files.csproj" />
     <ProjectReference Include="..\Fims.Services.Jobs.JobRepository\Fims.Services.Jobs.JobRepository.csproj" />
     <ProjectReference Include="..\Fims.WebApi\Fims.WebApi.csproj" />
   </ItemGroup>

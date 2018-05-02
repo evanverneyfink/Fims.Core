@@ -64,6 +64,34 @@ namespace Fims.Server.Data
         public Resource GetResource(Type type, dynamic document) => (Resource)ConvertDocumentToObject(type, document);
 
         /// <summary>
+        /// Gets the property value provider dictionary
+        /// </summary>
+        /// <param name="document"></param>
+        /// <returns></returns>
+        private IDictionary<string, Func<object>> GetPropertyValueProviderDictionary(dynamic document)
+        {
+            // if this is already a dictionary (e.g. ExpandoObject or JObject), just return the values
+            if (document is IDictionary<string, object> dict)
+                return dict.ToDictionary(kvp => kvp.Key, kvp => new Func<object>(() => kvp.Value));
+            
+            var propertyValues = new Dictionary<string, PropertyInfo>();
+
+            foreach (var prop in ((Type)document.GetType()).GetProperties())
+            {
+                // This handles cases where the same property exists twice on the object (different classes in the class hierarchy).
+                // If the current property's declaring type is a base class to the existing property's declaring type, we want to
+                // keep the property we already have. Otherwise, we overwrite it with the property from the derived class.
+                if (propertyValues.ContainsKey(prop.Name) &&
+                    prop.DeclaringType.IsAssignableFrom(propertyValues[prop.Name].DeclaringType))
+                    continue;
+
+                propertyValues[prop.Name] = prop;
+            }
+
+            return propertyValues.ToDictionary(kvp => kvp.Key, kvp => new Func<object>(() => kvp.Value.GetValue(document)));
+        }
+
+        /// <summary>
         /// Converts a document to an object
         /// </summary>
         /// <param name="type"></param>
@@ -73,11 +101,7 @@ namespace Fims.Server.Data
         {
             var resource = Activator.CreateInstance(type);
 
-            IDictionary<string, Func<object>> docProps =
-                document is IDictionary<string, object> dict
-                    ? dict.ToDictionary(kvp => kvp.Key, kvp => new Func<object>(() => kvp.Value))
-                    : ((PropertyInfo[])document.GetType().GetProperties()).ToDictionary(p => p.Name,
-                                                                                        p => new Func<object>(() => p.GetValue(document)));
+            IDictionary<string, Func<object>> docProps = GetPropertyValueProviderDictionary(document);
 
             foreach (var prop in type.GetProperties())
             {

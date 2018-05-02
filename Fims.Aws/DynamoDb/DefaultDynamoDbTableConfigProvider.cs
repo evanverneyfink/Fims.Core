@@ -32,17 +32,24 @@ namespace Fims.Aws.DynamoDb
         public string GetTableName(Type type) => Environment.TableName();
 
         /// <summary>
+        /// Gets the table name for a type
+        /// </summary>
+        /// <param name="typeName"></param>
+        /// <returns></returns>
+        public string GetTableName(string typeName) => Environment.TableName();
+
+        /// <summary>
         /// Gets the name of the hash key for a table of the specified type
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="tableName"></param>
         /// <returns></returns>
-        public string GetTableHashKeyName(Type type) => DynamoDbDefaults.ResourceTypeAttribute;
+        public string GetTableHashKeyName(string tableName) => DynamoDbDefaults.ResourceTypeAttribute;
 
         /// <summary>
         /// Gets the name of the sort key for a table of the specified type
         /// </summary>
-        /// <param name="type"></param>
+        /// <param name="tableName"></param>
         /// <returns></returns>
-        public string GetTableRangeKeyName(Type type) => DynamoDbDefaults.ResourceIdAttribute;
+        public string GetTableRangeKeyName(string tableName) => DynamoDbDefaults.ResourceIdAttribute;
     }
 }

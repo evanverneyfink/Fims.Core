@@ -12,11 +12,7 @@ namespace Fims.Services.Jobs.JobRepository
         /// <returns></returns>
         public void Register(ResourceHandlerRegistryOptions options)
         {
-            options.Register<AmeJob>()
-                   .Register<CaptureJob>()
-                   .Register<QaJob>()
-                   .Register<TransferJob>()
-                   .Register<TransformJob>();
+            options.Register<Job, JobRepositoryResourceHandler>();
         }
     }
 }
