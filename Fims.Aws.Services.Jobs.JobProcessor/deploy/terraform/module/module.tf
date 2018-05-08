@@ -1,6 +1,6 @@
-variable "access_key" {}
-variable "secret_key" {}
-variable "account_id" {}
+variable "accessKey" {}
+variable "secretKey" {}
+variable "accountId" {}
 variable "region" {}
 
 variable "runtime" {}
@@ -13,16 +13,14 @@ variable "restApiHandler" {}
 variable "restApiZipFile" {}
 
 provider "aws" {
-  access_key = "${var.access_key}"
-  secret_key = "${var.secret_key}"
+  access_key = "${var.accessKey}"
+  secret_key = "${var.secretKey}"
   region     = "${var.region}"
 }
 
 locals {
   env_composite_name = "${var.serviceName}-${var.environmentName}-${var.environmentType}"
 }
-
-
 
 #################################
 #  aws_iam_role : iam_for_exec_lambda
@@ -175,7 +173,7 @@ resource "aws_api_gateway_integration" "fims_service_api_method-integration" {
   resource_id             = "${aws_api_gateway_resource.fims_service_api_resource.id}"
   http_method             = "${aws_api_gateway_method.fims_service_api_method.http_method}"
   type                    = "AWS_PROXY"
-  uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${var.account_id}:function:${aws_lambda_function.api_fims_service_lambda.function_name}/invocations"
+  uri                     = "arn:aws:apigateway:${var.region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.region}:${var.accountId}:function:${aws_lambda_function.api_fims_service_lambda.function_name}/invocations"
   integration_http_method = "POST"
 }
 
@@ -186,7 +184,7 @@ resource "aws_lambda_permission" "apigw_lambda" {
   principal     = "apigateway.amazonaws.com"
 
   # More: http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-control-access-using-iam-policies-to-invoke-api.html
-  source_arn = "arn:aws:execute-api:${var.region}:${var.account_id}:${aws_api_gateway_rest_api.fims_service_api.id}/*/${aws_api_gateway_method.fims_service_api_method.http_method}/*"
+  source_arn = "arn:aws:execute-api:${var.region}:${var.accountId}:${aws_api_gateway_rest_api.fims_service_api.id}/*/${aws_api_gateway_method.fims_service_api_method.http_method}/*"
 }
 
 resource "aws_api_gateway_deployment" "fims_service_deployment" {
@@ -208,20 +206,6 @@ resource "aws_api_gateway_deployment" "fims_service_deployment" {
 # Output 
 ##################################
 
-output "rest_service_url" {
+output restServiceUrl {
   value = "https://${aws_api_gateway_deployment.fims_service_deployment.rest_api_id}.execute-api.${var.region}.amazonaws.com/${aws_api_gateway_deployment.fims_service_deployment.stage_name}"
 }
-
-output "lambda_arn" {
-  value = "${aws_lambda_function.api_fims_service_lambda.arn}"
-}
-
-
-output "dynamodb_stream_arn" {
-  value = "${aws_dynamodb_table.repo_service_table.stream_arn}"
-}
-
-output "dynamodb_table_name" {
-  value = "${aws_dynamodb_table.repo_service_table.name}"
-}
-

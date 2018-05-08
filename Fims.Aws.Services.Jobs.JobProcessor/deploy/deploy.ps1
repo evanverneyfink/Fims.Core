@@ -8,3 +8,6 @@ cd terraform
 terraform init -input=false
 terraform apply -auto-approve -var-file="private.tfvars" -var-file="public.tfvars"
 cd ..
+
+# register the service and its profiles
+Invoke-Expression -Command "./register.ps1"

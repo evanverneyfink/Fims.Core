@@ -204,6 +204,10 @@ namespace Fims.Server.Api
                 return;
             }
 
+            // if a different ID was provided on the resource, or it wasn't set at all, set it now
+            if (resource.Id != existing.Id)
+                resource.Id = existing.Id;
+
             // update resource using handler
             var result = await resourceHandler.Update(resourceDescriptor, resource);
 

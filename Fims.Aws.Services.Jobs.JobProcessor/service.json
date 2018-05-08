@@ -1,0 +1,12 @@
+﻿{
+  "type": "Service",
+  "label": "Job Processor Service",
+  "hasResource": [
+    {
+      "resourceType": "JobProcess",
+      "httpEndpoint": "{{{serviceUrl}}}"
+    }
+  ],
+  "acceptsJobType": [],
+  "acceptsJobProfile": []
+}

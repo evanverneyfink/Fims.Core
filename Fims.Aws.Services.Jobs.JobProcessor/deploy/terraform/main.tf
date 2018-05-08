@@ -1,7 +1,7 @@
 
-variable access_key {}
-variable secret_key {}
-variable account_id {}
+variable accessKey {}
+variable secretKey {}
+variable accountId {}
 variable region {}
 
 variable runtime {}
@@ -13,13 +13,15 @@ variable environmentType {}
 variable restApiHandler {}
 variable restApiZipFile {}
 
+variable serviceRegistryUrl {}
 
-module "service" {
+
+module service {
   source = "./module"
 
-  access_key = "${var.access_key}"
-  secret_key = "${var.secret_key}"
-  account_id = "${var.account_id}"
+  accessKey = "${var.accessKey}"
+  secretKey = "${var.secretKey}"
+  accountId = "${var.accountId}"
   region     = "${var.region}"
 
   runtime = "${var.runtime}"
@@ -30,4 +32,12 @@ module "service" {
 
   restApiHandler = "${var.restApiHandler}"
   restApiZipFile = "${var.restApiZipFile}"
+}
+
+output restServiceUrl {
+	value = "${module.service.restServiceUrl}"
+}
+
+output serviceRegistryUrl {
+	value = "${var.serviceRegistryUrl}"
 }
