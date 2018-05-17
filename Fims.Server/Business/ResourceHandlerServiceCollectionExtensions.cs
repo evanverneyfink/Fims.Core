@@ -34,5 +34,17 @@ namespace Fims.Server.Business
         {
             return serviceCollection.AddFimsResourceHandling(opts => new T().Register(opts));
         }
+
+        /// <summary>
+        /// Adds resource handling
+        /// </summary>
+        /// <param name="serviceCollection"></param>
+        /// <param name="resourceHandlerRegistration"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddFimsResourceHandling(this IServiceCollection serviceCollection,
+                                                                 IResourceHandlerRegistration resourceHandlerRegistration)
+        {
+            return serviceCollection.AddFimsResourceHandling(resourceHandlerRegistration.Register);
+        }
     }
 }

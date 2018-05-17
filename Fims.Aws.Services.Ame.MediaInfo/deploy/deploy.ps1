@@ -2,6 +2,7 @@
 dotnet publish .. -c=Release
 New-Item -ItemType Directory -Force -Path ..\bin\Release\netcoreapp2.0\publish\lambda
 Compress-Archive -Path ..\bin\Release\netcoreapp2.0\publish\* -DestinationPath ..\bin\Release\netcoreapp2.0\publish\lambda\functions.zip -Force
+& .\SetZippedFileAttributes ..\bin\Release\netcoreapp2.0\publish\lambda\functions.zip binaries\mediainfo 755
 
 # run terraform to deploy to AWS
 cd terraform
@@ -10,4 +11,4 @@ terraform apply -auto-approve -var-file="private.tfvars" -var-file="public.tfvar
 cd ..
 
 # register the service and its profiles
-Invoke-Expression -Command "./register.ps1"
+# Invoke-Expression -Command "./register.ps1"

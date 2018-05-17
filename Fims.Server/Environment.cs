@@ -19,6 +19,7 @@ namespace Fims.Server
         public void AddAlternateKey(string key, string alternateKey)
         {
             (AlternateKeys.ContainsKey(key) ? AlternateKeys[key] : (AlternateKeys[key] = new List<string>())).Add(alternateKey);
+            (AlternateKeys.ContainsKey(alternateKey) ? AlternateKeys[alternateKey] : (AlternateKeys[alternateKey] = new List<string>())).Add(key);
         }
 
         /// <summary>
@@ -45,5 +46,23 @@ namespace Fims.Server
         /// <param name="key"></param>
         /// <returns></returns>
         protected abstract string GetTextValue(string key);
+
+        /// <summary>
+        /// Sets the value of an environment variable
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        public void Set<T>(string key, T value)
+        {
+            SetTextValue(key, value.ToString());
+        }
+
+        /// <summary>
+        /// Sets th text value for a config key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        protected abstract void SetTextValue(string key, string value);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Fims.Core.Model;
 
 namespace Fims.Core.Serialization
@@ -12,6 +13,14 @@ namespace Fims.Core.Serialization
         /// <param name="linksOnly"></param>
         /// <returns></returns>
         string Serialize(Resource resource, bool linksOnly = true);
+
+        /// <summary>
+        /// Serializes a collection of resources to text
+        /// </summary>
+        /// <param name="resources"></param>
+        /// <param name="linksOnly"></param>
+        /// <returns></returns>
+        string Serialize(IEnumerable<Resource> resources, bool linksOnly = true);
 
         /// <summary>
         /// Deserializes a resource from text

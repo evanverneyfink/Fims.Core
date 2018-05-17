@@ -23,9 +23,8 @@ foreach ($jobProfile in $service.acceptsJobProfile)
 {
 	# check for existing profile with the same label
 	$existingJobProfile = $null
-	foreach ($tmpProfileJson in $jobProfiles)
+	foreach ($tmpProfile in $jobProfiles)
 	{
-		$tmpProfile = ConvertFrom-Json $tmpProfileJson
 		if ($tmpProfile.label -eq $jobProfile.label)
 		{
 			$existingJobProfile = $tmpProfile
@@ -68,9 +67,8 @@ $services = ConvertFrom-Json $servicesJson
 
 # check if the service already exists
 $existingService = $null
-foreach ($tmpServiceJson in $services)
+foreach ($tmpService in $services)
 {
-	$tmpService = ConvertFrom-Json $tmpServiceJson
 	if ($tmpService.label -eq $service.label)
 	{
 		$existingService = $tmpService

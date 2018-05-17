@@ -29,6 +29,7 @@ module service {
   serviceName = "${var.serviceName}"
   environmentName = "${var.environmentName}"
   environmentType = "${var.environmentType}"
+  serviceRegistryUrl = "${var.serviceRegistryUrl}"
 
   restApiHandler = "${var.restApiHandler}"
   restApiZipFile = "${var.restApiZipFile}"

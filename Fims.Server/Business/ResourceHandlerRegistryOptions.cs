@@ -19,7 +19,7 @@ namespace Fims.Server.Business
         /// <summary>
         /// Gets the service collection
         /// </summary>
-        private IServiceCollection ServiceCollection { get; }
+        public IServiceCollection ServiceCollection { get; }
 
         /// <summary>
         /// Gets the collection of handler type mappings
@@ -76,19 +76,29 @@ namespace Fims.Server.Business
                 t =>
                 {
                     var logger = svcProvider.GetService<ILogger>();
-                    logger.Info("Using default resource handler for resource type {0}", t.Name);
+                    try
+                    {
+                        logger.Info("Creating resource handler for resource type {0}...", t.Name);
 
-                    // get the handler type for the provided resource type
-                    var handlerType = GetHandlerType(t);
+                        // get the handler type for the provided resource type
+                        var handlerType = GetHandlerType(t);
 
-                    var handler = (IResourceHandler)svcProvider.GetService(handlerType);
-                    if (handler == null)
-                        logger.Warning(
-                            "Failed to create default handler for resource type {ResourceType}. Service provider was unable to resolve handler type {ResourceHandlerType}.",
-                            t.Name,
-                            handlerType);
+                        logger.Info("Handler type for resource type {0} = {1}", t.Name, handlerType.Name);
 
-                    return handler;
+                        var handler = (IResourceHandler)svcProvider.GetService(handlerType);
+                        if (handler == null)
+                            logger.Warning(
+                                "Failed to create default handler for resource type {ResourceType}. Service provider was unable to resolve handler type {ResourceHandlerType}.",
+                                t.Name,
+                                handlerType);
+
+                        return handler;
+                    }
+                    catch (Exception e)
+                    {
+                        logger.Error("An error occurred creating resource handler for type {0}. Exception: {1}", t.Name, e);
+                        throw;
+                    }
                 };
 
             return this;

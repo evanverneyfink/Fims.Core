@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
 using Amazon.Lambda.Core;
 using Fims.Aws.ServiceBuilding;
 using Fims.Core.Model;
 using Fims.Services.Jobs.WorkerFunctions;
-using Newtonsoft.Json;
 
 namespace Fims.Aws.Lambda
 {
@@ -15,22 +16,26 @@ namespace Fims.Aws.Lambda
         /// <typeparam name="T"></typeparam>
         /// <param name="input"></param>
         /// <param name="lambdaContext"></param>
+        /// <param name="configure"></param>
         /// <returns></returns>
-        public static async Task Handle<T>(dynamic input, ILambdaContext lambdaContext) where T : class, IWorker
+        public static async Task Handle<T>(Stream input, ILambdaContext lambdaContext, Action<FimsAwsServiceBuilder> configure = null) where T : class, IWorker
         {
             IFimsAwsWorkerService service = null;
             try
             {
                 // build worker service
-                service =
+                var serviceBuilder =
                     FimsAwsServiceBuilder.Create<LambdaEnvironment>()
                                          .WithDynamoDbRepository()
                                          .WithS3FileStorage()
-                                         .With(lambdaContext)
-                                         .BuildWorkerSevice<T>();
+                                         .With(lambdaContext);
 
-                // use JSON serialization to convert input object to JobAssignment
-                var jobAssignment = service.ResourceSerializer.Deserialize<JobAssignment>(JsonConvert.SerializeObject(input));
+                configure?.Invoke(serviceBuilder);
+
+                service = serviceBuilder.BuildWorkerSevice<T>();
+                
+                // read input as text and deserialize it
+                var jobAssignment = await service.ResourceSerializer.Deserialize<JobAssignment>(await new StreamReader(input).ReadToEndAsync());
 
                 // run worker
                 await service.Worker.Execute(jobAssignment);

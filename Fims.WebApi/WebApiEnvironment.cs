@@ -24,9 +24,13 @@ namespace Fims.WebApi
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        protected override string GetTextValue(string key)
-        {
-            return Configuration[key];
-        }
+        protected override string GetTextValue(string key) => Configuration[key];
+
+        /// <summary>
+        /// Sets th text value for a config key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        protected override void SetTextValue(string key, string value) => Configuration[key] = value;
     }
 }

@@ -24,4 +24,10 @@
     <ProjectReference Include="..\Fims.Services.Jobs.WorkerFunctions\Fims.Services.Jobs.WorkerFunctions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="binaries\mediainfo">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

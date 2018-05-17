@@ -14,8 +14,7 @@ namespace Fims.Services.Jobs.WorkerFunctions
         public static IServiceCollection AddFimsWorkerFunctionApi<T>(this IServiceCollection serviceCollection)
             where T : class, IWorkerFunctionInvoker
         {
-            return serviceCollection.AddFimsResourceHandling<WorkerFunctionInvocation>()
-                                    .AddScoped<IWorkerFunctionInvoker, T>();
+            return serviceCollection.AddFimsResourceHandling<WorkerFunctionInvocation<T>>();
         }
         
         /// <summary>
@@ -25,9 +24,9 @@ namespace Fims.Services.Jobs.WorkerFunctions
         /// <returns></returns>
         public static IServiceCollection AddFimsInProcesssWorkerFunctionApi<T>(this IServiceCollection serviceCollection) where T : class, IWorker
         {
-            return serviceCollection.AddFimsResourceHandling<WorkerFunctionInvocation>()
-                                    .AddScoped<IWorkerFunctionInvoker>(svcProvider => new InProcessWorkerFunctionInvoker(svcProvider.GetService))
-                                    .AddScoped<T>();
+            return serviceCollection
+                   .AddFimsResourceHandling(new WorkerFunctionInvocation(svcProvider => new InProcessWorkerFunctionInvoker(svcProvider.GetService)))
+                   .AddScoped<T>();
         }
     }
 }

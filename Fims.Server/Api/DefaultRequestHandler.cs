@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Fims.Core;
@@ -7,7 +6,6 @@ using Fims.Core.Model;
 using Fims.Core.Serialization;
 using Fims.Server.Business;
 using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json.Linq;
 
 namespace Fims.Server.Api
 {
@@ -167,7 +165,7 @@ namespace Fims.Server.Api
 
                 // create JSON array from results and return as body
                 RequestContext.Response.WithStatus(HttpStatusCode.OK)
-                              .WithJsonBody(new JArray(resourceCollection.Select(r => ResourceSerializer.Serialize(r))));
+                              .WithJsonBody(ResourceSerializer.Serialize(resourceCollection));
             }
         }
 

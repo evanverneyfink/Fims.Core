@@ -8,6 +8,7 @@ variable "runtime" {}
 variable "serviceName" {}
 variable "environmentName" {}
 variable "environmentType" {}
+variable "serviceRegistryUrl" {}
 
 variable "restApiHandler" {}
 variable "restApiZipFile" {}
@@ -223,6 +224,7 @@ resource "aws_api_gateway_deployment" "fims_service_deployment" {
   variables = {
     "TableName"                = "${local.env_composite_name}"
     "PublicUrl"                = "https://${aws_api_gateway_rest_api.fims_service_api.id}.execute-api.${var.region}.amazonaws.com/${var.environmentType}"
+    "ServiceRegistryUrl"       = "${var.serviceRegistryUrl}"
     "WorkerFunctionName"       = "${aws_lambda_function.worker_lambda.function_name}"
   }
 }

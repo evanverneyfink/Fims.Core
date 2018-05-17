@@ -39,6 +39,17 @@ namespace Fims.Json
         }
 
         /// <summary>
+        /// Serializes a collection of resources to text
+        /// </summary>
+        /// <param name="resources"></param>
+        /// <param name="linksOnly"></param>
+        /// <returns></returns>
+        public string Serialize(IEnumerable<Resource> resources, bool linksOnly = true)
+        {
+            return new JArray(resources.Select(GetJsonObject)).ToString(Formatting.None);
+        }
+
+        /// <summary>
         /// Gets JSON from an object
         /// </summary>
         /// <param name="obj"></param>

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Fims.Core.Model;
 using Fims.Core.Serialization;
+using Fims.Server;
 using Fims.Server.Data;
 using Fims.Server.Files;
 using Fims.Services.Jobs.WorkerFunctions;
@@ -15,6 +16,7 @@ namespace Fims.Services.Ame.MediaInfo
         /// <summary>
         /// Instantiates a <see cref="MediaInfoWorker"/>
         /// </summary>
+        /// <param name="logger"></param>
         /// <param name="dataHandler"></param>
         /// <param name="accessibleUrlProvider"></param>
         /// <param name="processRunner"></param>
@@ -22,7 +24,8 @@ namespace Fims.Services.Ame.MediaInfo
         /// <param name="fileStorage"></param>
         /// <param name="resourceSerializer"></param>
         /// <param name="processLocator"></param>
-        public MediaInfoWorker(IResourceDataHandler dataHandler,
+        public MediaInfoWorker(ILogger logger,
+                               IResourceDataHandler dataHandler,
                                IMediaInfoAccessibleUrlProvider accessibleUrlProvider,
                                IProcessRunner processRunner,
                                IMediaInfoOutputConverter mediaInfoOutputConverter,
@@ -31,6 +34,7 @@ namespace Fims.Services.Ame.MediaInfo
                                IMediaInfoProcessLocator processLocator)
             : base(dataHandler)
         {
+            Logger = logger;
             AccessibleUrlProvider = accessibleUrlProvider;
             ProcessRunner = processRunner;
             MediaInfoOutputConverter = mediaInfoOutputConverter;
@@ -42,6 +46,11 @@ namespace Fims.Services.Ame.MediaInfo
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets the logger
+        /// </summary>
+        private ILogger Logger { get; }
 
         /// <summary>
         /// Gets the accessible url provider
@@ -83,46 +92,80 @@ namespace Fims.Services.Ame.MediaInfo
         /// <returns></returns>
         public override async Task Execute(AmeJob job)
         {
-            // ensure this is a valid profile for this worker
-            if (job.JobProfile.Label != "ExtractTechnicalMetadata")
-                throw new Exception($"JobProfile '{job.JobProfile.Label}' not accepted");
+            Logger.Info("Starting MediaInfo job {0}...", job?.Id);
 
-            // ensure the job specifies input and output locations
-            if (job.JobInput["inputFile"] == null)
-                throw new Exception("Job does not specify an input location.");
-            // ensure the job specifies an output location
-            if (job.JobInput["outputLocation"] == null)
-                throw new Exception("Job does not specify an output location.");
+            try
+            {
+                if (job == null) throw new ArgumentNullException(nameof(job));
 
-            var serializedOutputLocation = job.JobInput["outputLocation"]?.ToString();
-            if (serializedOutputLocation == null)
-                throw new Exception("Failed to resolve jobInput[\"outputLocation\"]");
+                Logger.Debug("Job JSON: {0}", ResourceSerializer.Serialize(job));
 
-            // get output locator
-            var outputLocation = await ResourceSerializer.Deserialize<Locator>(serializedOutputLocation);
+                // ensure this is a valid profile for this worker
+                if (job.JobProfile.Label != "ExtractTechnicalMetadata")
+                    throw new Exception($"JobProfile '{job.JobProfile.Label}' not accepted");
 
-            var serializedInputFile = job.JobInput["inputFile"]?.ToString();
-            if (serializedInputFile == null)
-                throw new Exception("Failed to resolve jobInput[\"inputFile\"]");
+                // ensure the job specifies input and output locations
+                if (job.JobInput["inputFile"] == null)
+                    throw new Exception("Job does not specify an input location.");
+                // ensure the job specifies an output location
+                if (job.JobInput["outputLocation"] == null)
+                    throw new Exception("Job does not specify an output location.");
 
-            // get input locator
-            var inputFile = await ResourceSerializer.Deserialize<Locator>(serializedInputFile);
+                var serializedOutputLocation = job.JobInput["outputLocation"]?.ToString();
+                if (serializedOutputLocation == null)
+                    throw new Exception("Failed to resolve jobInput[\"outputLocation\"]");
 
-            // get the url of the file MediaInfo should use (could be local, S3, etc)
-            var accessibleUrl = await AccessibleUrlProvider.GetMediaInfoAccessibleUrl(inputFile);
-            if (accessibleUrl == null)
-                throw new Exception("Input file is not accessible to MediaInfo.");
+                Logger.Debug("Deserializing output location from {0}...", serializedOutputLocation);
 
-            // run the media info process
-            var result = await ProcessRunner.RunProcess(ProcessLocator.GetMediaInfoLocation(), "--Output=EBUCore", accessibleUrl);
-            if (!string.IsNullOrWhiteSpace(result.StdErr))
-                throw new Exception($"MediaInfo returned one or more errors: {result.StdErr}.");
+                // get output locator
+                var outputLocation = await ResourceSerializer.Deserialize<Locator>(serializedOutputLocation);
 
-            // convert output to JSON
-            var mediaInfoJson = MediaInfoOutputConverter.GetJson(result.StdOut);
+                var serializedInputFile = job.JobInput["inputFile"]?.ToString();
+                if (serializedInputFile == null)
+                    throw new Exception("Failed to resolve jobInput[\"inputFile\"]");
 
-            // save JSON to file and store the resulting locator in the job output
-            job.JobOutput["outputFile"] = await FileStorage.SaveFile(outputLocation, Guid.NewGuid().ToString(), mediaInfoJson);
+                Logger.Debug("Deserializing input file path from {0}...", serializedInputFile);
+
+                // get input locator
+                var inputFile = await ResourceSerializer.Deserialize<Locator>(serializedInputFile);
+                
+                Logger.Debug("Getting url for input file that's accessible by MediaInfo...");
+
+                // get the url of the file MediaInfo should use (could be local, S3, etc)
+                var accessibleUrl = await AccessibleUrlProvider.GetMediaInfoAccessibleUrl(inputFile);
+                if (accessibleUrl == null)
+                    throw new Exception("Input file is not accessible to MediaInfo.");
+
+                Logger.Debug("Getting location of MediaInfo binary...");
+
+                var mediaInfoLocation = ProcessLocator.GetMediaInfoLocation();
+                
+                Logger.Debug("Running MediaInfo from {0} against input file {1}...", mediaInfoLocation, accessibleUrl);
+
+                // run the media info process
+                var result = await ProcessRunner.RunProcess(mediaInfoLocation, "--Output=EBUCore", accessibleUrl);
+                if (!string.IsNullOrWhiteSpace(result.StdErr))
+                    throw new Exception($"MediaInfo returned one or more errors: {result.StdErr}.");
+
+                Logger.Debug("MediaInfo successfully ran against input file {0}. Converting output to JSON...", accessibleUrl);
+
+                // convert output to JSON
+                var mediaInfoJson = MediaInfoOutputConverter.GetJson(result.StdOut);
+
+                Logger.Debug("Storing MediaInfo JSON for {0} to file...", accessibleUrl);
+
+                // save JSON to file and store the resulting locator in the job output
+                var outputLocator = await FileStorage.SaveFile(outputLocation, Guid.NewGuid().ToString(), mediaInfoJson);
+                job.JobOutput["outputFile"] = outputLocator;
+                
+                Logger.Debug("MediaInfo JSON stored to file. Locator = {0}", ResourceSerializer.Serialize(outputLocator));
+                Logger.Info("MediaInfo job {0} completed successfully.", job.Id);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("An error occurred running the MediaInfo job. Exception: {0}", ex);
+                throw;
+            }
         }
 
         #endregion

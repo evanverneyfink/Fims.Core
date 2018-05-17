@@ -3,8 +3,8 @@
   "label": "MediaInfo AME Service",
   "hasResource": [
     {
-      "resourceType": "fims:JobAssignment",
-      "httpEndpoint": "{{{serviceUrl}}}"
+      "resourceType": "JobAssignment",
+      "httpEndpoint": "{{{serviceUrl}}}/JobAssignments"
     }
   ],
   "acceptsJobType": [

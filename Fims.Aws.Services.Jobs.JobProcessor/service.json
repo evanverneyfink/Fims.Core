@@ -4,7 +4,7 @@
   "hasResource": [
     {
       "resourceType": "JobProcess",
-      "httpEndpoint": "{{{serviceUrl}}}"
+      "httpEndpoint": "{{{serviceUrl}}}/JobProcesses"
     }
   ],
   "acceptsJobType": [],

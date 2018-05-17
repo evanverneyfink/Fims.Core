@@ -54,11 +54,7 @@ namespace Fims.Server.Data
         /// <returns></returns>
         private Task Execute(ResourceDescriptor resourceDescriptor, Func<IResourceDataHandler, Task> execute)
         {
-            var isLocal = resourceDescriptor.Url.StartsWith(Environment.PublicUrl());
-
-            Logger.Debug("Executing operation for {0} resource at {1}", isLocal ? "local" : "remote", resourceDescriptor.Url);
-
-            return isLocal ? execute(RepositoryHandler) : execute(HttpHandler);
+            return IsLocal(resourceDescriptor) ? execute(RepositoryHandler) : execute(HttpHandler);
         }
 
         /// <summary>
@@ -69,11 +65,24 @@ namespace Fims.Server.Data
         /// <returns></returns>
         private Task<TResult> Execute<TResult>(ResourceDescriptor resourceDescriptor, Func<IResourceDataHandler, Task<TResult>> execute)
         {
-            var isLocal = resourceDescriptor.Url.StartsWith(Environment.PublicUrl());
+            return IsLocal(resourceDescriptor) ? execute(RepositoryHandler) : execute(HttpHandler);
+        }
 
-            Logger.Debug("Executing operation for {0} resource at {1}", isLocal ? "local" : "remote", resourceDescriptor.Url);
+        /// <summary>
+        /// Checks if a resource is local
+        /// </summary>
+        /// <param name="resourceDescriptor"></param>
+        /// <returns></returns>
+        private bool IsLocal(ResourceDescriptor resourceDescriptor)
+        {
+            var isLocal = !string.IsNullOrWhiteSpace(Environment.PublicUrl()) && resourceDescriptor.Url.StartsWith(Environment.PublicUrl());
 
-            return isLocal ? execute(RepositoryHandler) : execute(HttpHandler);
+            Logger.Debug("Executing operation for {0} resource at {1} (local url = {2})",
+                         isLocal ? "local" : "remote",
+                         resourceDescriptor.Url,
+                         Environment.PublicUrl());
+
+            return isLocal;
         }
 
         /// <summary>

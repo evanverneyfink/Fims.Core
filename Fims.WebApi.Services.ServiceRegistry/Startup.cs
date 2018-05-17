@@ -1,15 +1,24 @@
-﻿using Fims.Server;
+﻿using Fims.Aws.DynamoDb;
+using Fims.Server;
 using Fims.Server.Api;
 using Fims.Server.Files;
 using Fims.Server.LiteDb;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Fims.WebApi.Services.ServiceRegistry
 {
     public class Startup
     {
+        private IConfiguration Configuration { get; }
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
         /// <summary>
         /// Configures FIMS services
         /// </summary>
@@ -18,7 +27,7 @@ namespace Fims.WebApi.Services.ServiceRegistry
         {
             services.AddConsoleLogger()
                     .AddLocalFileStorage()
-                    .AddLiteDb()
+                    .AddDynamoDbFimsRepository(opts => Configuration.Bind("AWS", opts))
                     .AddFimsWebApi<Fims.Services.ServiceRegistry.ServiceRegistry>();
         }
 

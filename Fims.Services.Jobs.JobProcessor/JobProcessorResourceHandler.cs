@@ -81,20 +81,24 @@ namespace Fims.Services.Jobs.JobProcessor
                         jobProcess.JobProcessStatus = job.JobStatus = "Running";
                         jobProcess.JobStart = DateTime.UtcNow;
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        jobProcess.JobProcessStatus = "Failed";
-                        jobProcess.JobProcessStatusReason = $"Service '{serviceResource.Service.Label}' failed to accept JobAssignment";
-                        job.JobStatus = "Failed";
-                        job.JobStatusReason = $"Service '{serviceResource.Service.Label}' failed to accept JobAssignment";
+                        Logger.Error("Service '{0}' at {1} failed to accept JobAssignment. Exception: {2}",
+                                     serviceResource.Service.Label,
+                                     serviceResource.Resource.HttpEndpoint,
+                                     ex);
+
+                        job.JobStatus = jobProcess.JobProcessStatus = "Failed";
+                        job.JobStatusReason = jobProcess.JobProcessStatusReason =
+                                                  $"Service '{serviceResource.Service.Label}' at {serviceResource.Resource.HttpEndpoint} failed to accept JobAssignment. Exception: {ex}";
                     }
                 }
                 else
                 {
-                    jobProcess.JobProcessStatus = "Failed";
-                    jobProcess.JobProcessStatusReason = "No accepting service available";
-                    job.JobStatus = "Failed";
-                    job.JobStatusReason = "No accepting service available";
+                    Logger.Warning("No accepting service available for job type {0}.", job.Type);
+
+                    job.JobStatus = jobProcess.JobProcessStatus = "Failed";
+                    job.JobStatusReason = jobProcess.JobProcessStatusReason = $"No accepting service available for job type {job.Type}.";
                 }
 
                 // update the job
@@ -102,10 +106,12 @@ namespace Fims.Services.Jobs.JobProcessor
                 {
                     await DataHandler.Update(job);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Logger.Error("Unable to update job {0}. Exception: {1}", job.Id, ex);
+
                     jobProcess.JobProcessStatus = "Failed";
-                    jobProcess.JobProcessStatusReason = $"Unable to update job '{job.Id}'";
+                    jobProcess.JobProcessStatusReason = $"Unable to update job {job.Id}. Exception: {ex}";
                 }
 
                 // hit the async callback endpoint

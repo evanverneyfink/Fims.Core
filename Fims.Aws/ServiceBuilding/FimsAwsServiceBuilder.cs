@@ -1,4 +1,5 @@
-﻿using Fims.Aws.DynamoDb;
+﻿using System;
+using Fims.Aws.DynamoDb;
 using Fims.Aws.S3;
 using Fims.Core.Serialization;
 using Fims.Server;
@@ -83,10 +84,34 @@ namespace Fims.Aws.ServiceBuilding
         }
 
         /// <summary>
+        /// Adds a type registration
+        /// </summary>
+        /// <typeparam name="TRegistered"></typeparam>
+        /// <typeparam name="TImplementation"></typeparam>
+        /// <returns></returns>
+        public FimsAwsServiceBuilder With<TRegistered, TImplementation>()
+            where TRegistered : class
+            where TImplementation : class, TRegistered
+        {
+            ServiceCollection.AddScoped<TRegistered, TImplementation>();
+            return this;
+        }
+
+        /// <summary>
+        /// Adds an object to the service collection
+        /// </summary>
+        /// <returns></returns>
+        public FimsAwsServiceBuilder With(Action<IServiceCollection> register)
+        {
+            register(ServiceCollection);
+            return this;
+        }
+
+        /// <summary>
         /// Builds a resource API
         /// </summary>
         /// <returns></returns>
-        public IFimsAwsResourceApi BuildResourceApi<TRequestContext, TResourceRegistration>()
+        public IFimsAwsResourceApi BuildResourceApi<TRequestContext, TResourceRegistration>(Action<IServiceCollection> addAdditionalServices = null)
             where TRequestContext : class, IRequestContext
             where TResourceRegistration : IResourceHandlerRegistration, new()
         {
@@ -95,6 +120,8 @@ namespace Fims.Aws.ServiceBuilding
                 .AddFimsResourceHandling<TResourceRegistration>()
                 .AddFimsServerDefaultApi()
                 .AddScoped<IRequestContext, TRequestContext>();
+
+            addAdditionalServices?.Invoke(ServiceCollection);
 
             var serviceProvider = ServiceCollection.BuildServiceProvider();
 
@@ -107,10 +134,14 @@ namespace Fims.Aws.ServiceBuilding
         /// Creates a builds a worker service
         /// </summary>
         /// <returns></returns>
-        public IFimsAwsWorkerService BuildWorkerSevice<T>()
+        public IFimsAwsWorkerService BuildWorkerSevice<T>(Action<IServiceCollection> addAdditionalServices = null)
             where T : class, IWorker
         {
-            ServiceCollection.AddScoped<IWorker, T>();
+            ServiceCollection
+                .AddSingleton<ILogger, ConsoleLogger>()
+                .AddScoped<IWorker, T>();
+
+            addAdditionalServices?.Invoke(ServiceCollection);
 
             var serviceProvider = ServiceCollection.BuildServiceProvider();
 

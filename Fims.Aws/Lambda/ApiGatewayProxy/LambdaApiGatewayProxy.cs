@@ -15,9 +15,11 @@ namespace Fims.Aws.Lambda.ApiGatewayProxy
         /// <typeparam name="T"></typeparam>
         /// <param name="lambdaContext"></param>
         /// <param name="request"></param>
+        /// <param name="configure"></param>
         /// <returns></returns>
         public static async Task<APIGatewayProxyResponse> Handle<T>(APIGatewayProxyRequest request,
-                                                                    ILambdaContext lambdaContext)
+                                                                    ILambdaContext lambdaContext,
+                                                                    Action<FimsAwsServiceBuilder> configure = null)
             where T : IResourceHandlerRegistration, new()
         {
             IFimsAwsResourceApi service = null;
@@ -26,12 +28,15 @@ namespace Fims.Aws.Lambda.ApiGatewayProxy
                 Console.WriteLine("Building FIMS service...");
 
                 // build service
-                service = FimsAwsServiceBuilder.Create<ApiGatewayProxyLambdaEnvironment>()
+                var serviceBuilder = FimsAwsServiceBuilder.Create<ApiGatewayProxyLambdaEnvironment>()
                                                .WithDynamoDbRepository()
                                                .WithS3FileStorage()
                                                .With(request)
-                                               .With(lambdaContext)
-                                               .BuildResourceApi<ApiGatewayProxyLambdaRequestContext, T>();
+                                               .With(lambdaContext);
+
+                configure?.Invoke(serviceBuilder);
+                    
+                service = serviceBuilder.BuildResourceApi<ApiGatewayProxyLambdaRequestContext, T>();
             }
             catch (Exception exception)
             {

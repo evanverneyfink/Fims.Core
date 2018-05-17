@@ -24,9 +24,15 @@ namespace Fims.Aws.Lambda
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        protected override string GetTextValue(string key) =>
-            Environment.GetEnvironmentVariables().Contains(key)
-                ? (string)Environment.GetEnvironmentVariables()[key]
-                : string.Empty;
+        protected override string GetTextValue(string key) => Environment.GetEnvironmentVariables().Contains(key)
+                                                                  ? (string)Environment.GetEnvironmentVariables()[key]
+                                                                  : string.Empty;
+
+        /// <summary>
+        /// Sets th text value for a config key
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        protected override void SetTextValue(string key, string value) => Environment.SetEnvironmentVariable(key, value);
     }
 }
