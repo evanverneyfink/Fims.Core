@@ -7,7 +7,7 @@ namespace Fims.Aws.Services.Ame.MediaInfo
     {
         public static FimsAwsServiceBuilder AddAwsMediaInfo(this FimsAwsServiceBuilder serviceBuilder)
         {
-            return serviceBuilder.With(services => services.AddMediaInfo<S3UrlProvider, LambdaProcessLocator>());
+            return serviceBuilder.With(services => services.AddMediaInfo<S3MediaInfoAccessibleLocationProvider, LambdaProcessLocator>());
         }
     }
 }

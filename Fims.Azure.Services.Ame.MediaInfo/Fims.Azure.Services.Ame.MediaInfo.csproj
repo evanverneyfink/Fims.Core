@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="binaries\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WindowsAzure.Storage" Version="9.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fims.Azure\Fims.Azure.csproj" />
+    <ProjectReference Include="..\Fims.Core\Fims.Core.csproj" />
+    <ProjectReference Include="..\Fims.Server\Fims.Server.csproj" />
+    <ProjectReference Include="..\Fims.Services.Ame.MediaInfo\Fims.Services.Ame.MediaInfo.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="binaries\MediaInfo.exe">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

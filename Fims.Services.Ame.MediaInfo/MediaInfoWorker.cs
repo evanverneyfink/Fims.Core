@@ -18,7 +18,7 @@ namespace Fims.Services.Ame.MediaInfo
         /// </summary>
         /// <param name="logger"></param>
         /// <param name="dataHandler"></param>
-        /// <param name="accessibleUrlProvider"></param>
+        /// <param name="accessibleLocationProvider"></param>
         /// <param name="processRunner"></param>
         /// <param name="mediaInfoOutputConverter"></param>
         /// <param name="fileStorage"></param>
@@ -26,7 +26,7 @@ namespace Fims.Services.Ame.MediaInfo
         /// <param name="processLocator"></param>
         public MediaInfoWorker(ILogger logger,
                                IResourceDataHandler dataHandler,
-                               IMediaInfoAccessibleUrlProvider accessibleUrlProvider,
+                               IMediaInfoAccessibleLocationProvider accessibleLocationProvider,
                                IProcessRunner processRunner,
                                IMediaInfoOutputConverter mediaInfoOutputConverter,
                                IFileStorage fileStorage,
@@ -35,7 +35,7 @@ namespace Fims.Services.Ame.MediaInfo
             : base(dataHandler)
         {
             Logger = logger;
-            AccessibleUrlProvider = accessibleUrlProvider;
+            AccessibleLocationProvider = accessibleLocationProvider;
             ProcessRunner = processRunner;
             MediaInfoOutputConverter = mediaInfoOutputConverter;
             FileStorage = fileStorage;
@@ -55,7 +55,7 @@ namespace Fims.Services.Ame.MediaInfo
         /// <summary>
         /// Gets the accessible url provider
         /// </summary>
-        private IMediaInfoAccessibleUrlProvider AccessibleUrlProvider { get; }
+        private IMediaInfoAccessibleLocationProvider AccessibleLocationProvider { get; }
 
         /// <summary>
         /// Gets the process runner
@@ -132,7 +132,7 @@ namespace Fims.Services.Ame.MediaInfo
                 Logger.Debug("Getting url for input file that's accessible by MediaInfo...");
 
                 // get the url of the file MediaInfo should use (could be local, S3, etc)
-                var accessibleUrl = await AccessibleUrlProvider.GetMediaInfoAccessibleUrl(inputFile);
+                var accessibleUrl = await AccessibleLocationProvider.GetMediaInfoAccessibleLocation(inputFile);
                 if (accessibleUrl == null)
                     throw new Exception("Input file is not accessible to MediaInfo.");
 
@@ -155,7 +155,7 @@ namespace Fims.Services.Ame.MediaInfo
                 Logger.Debug("Storing MediaInfo JSON for {0} to file...", accessibleUrl);
 
                 // save JSON to file and store the resulting locator in the job output
-                var outputLocator = await FileStorage.SaveFile(outputLocation, Guid.NewGuid().ToString(), mediaInfoJson);
+                var outputLocator = await FileStorage.WriteTextToFile(outputLocation, Guid.NewGuid().ToString(), mediaInfoJson);
                 job.JobOutput["outputFile"] = outputLocator;
                 
                 Logger.Debug("MediaInfo JSON stored to file. Locator = {0}", ResourceSerializer.Serialize(outputLocator));

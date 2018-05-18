@@ -1,23 +1,19 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Fims.Core.Model;
 
 namespace Fims.Server.Files
 {
-    public class LocalFileStorage : IFileStorage
+    public class LocalFileStorage : FileStorage<LocalLocator>
     {
         /// <summary>
         /// Saves a file to storage
         /// </summary>
-        /// <param name="locator"></param>
+        /// <param name="localLocator"></param>
         /// <param name="fileName"></param>
         /// <param name="contents"></param>
-        public Task<Locator> SaveFile(Locator locator, string fileName, string contents)
-        {
-            if (!(locator is LocalLocator localLocator))
-                throw new Exception("Locator is not for a local file.");
-            
+        protected override Task<Locator> WriteTextToFile(LocalLocator localLocator, string fileName, string contents)
+        {   
             fileName = (localLocator.FileName ?? string.Empty) + fileName;
 
             // build path to output folder

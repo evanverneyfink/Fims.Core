@@ -7,7 +7,8 @@ namespace Fims.Server.Api
         /// <summary>
         /// Handles an HTTP request
         /// </summary>
+        /// <param name="request"></param>
         /// <returns></returns>
-        Task<IResponse> HandleRequest();
+        Task<IResponse> HandleRequest(IRequest request);
     }
 }

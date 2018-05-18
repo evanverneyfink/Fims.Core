@@ -1,5 +1,5 @@
 ﻿using System;
-using Fims.Server;
+using Fims.Server.Environment;
 
 namespace Fims.Aws.DynamoDb
 {

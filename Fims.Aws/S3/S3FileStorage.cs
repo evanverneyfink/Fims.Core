@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Fims.Core.Model;
@@ -7,7 +6,7 @@ using Fims.Server.Files;
 
 namespace Fims.Aws.S3
 {
-    public class S3FileStorage : IFileStorage
+    public class S3FileStorage : FileStorage<AwsS3Locator>
     {
         /// <summary>
         /// Gets the S3 client
@@ -17,15 +16,12 @@ namespace Fims.Aws.S3
         /// <summary>
         /// Saves a file by doing a put to the S3 API
         /// </summary>
-        /// <param name="locator"></param>
+        /// <param name="s3Locator"></param>
         /// <param name="fileName"></param>
         /// <param name="contents"></param>
         /// <returns></returns>
-        public async Task<Locator> SaveFile(Locator locator, string fileName, string contents)
+        protected override async Task<Locator> WriteTextToFile(AwsS3Locator s3Locator, string fileName, string contents)
         {
-            if (!(locator is AwsS3Locator s3Locator))
-                throw new Exception("Locator must be an AWS S3 locator.");
-
             var objectKey = (s3Locator.AwsS3Key ?? string.Empty) + fileName;
 
             await S3.PutObjectAsync(new PutObjectRequest

@@ -25,7 +25,7 @@ namespace Fims.Aws.Lambda
             {
                 // build worker service
                 var serviceBuilder =
-                    FimsAwsServiceBuilder.Create<LambdaEnvironment>()
+                    FimsAwsServiceBuilder.Create()
                                          .WithDynamoDbRepository()
                                          .WithS3FileStorage()
                                          .With(lambdaContext);

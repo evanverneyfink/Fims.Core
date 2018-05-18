@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Fims.Azure\Fims.Azure.csproj" />
+    <ProjectReference Include="..\Fims.Server\Fims.Server.csproj" />
+    <ProjectReference Include="..\Fims.Services.Jobs.JobProcessor\Fims.Services.Jobs.JobProcessor.csproj" />
+  </ItemGroup>
+
+</Project>

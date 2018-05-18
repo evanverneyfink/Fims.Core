@@ -4,6 +4,7 @@ using Amazon.Lambda;
 using Fims.Core.Model;
 using Fims.Core.Serialization;
 using Fims.Server;
+using Fims.Server.Environment;
 using Fims.Services.Jobs.WorkerFunctions;
 using Microsoft.Extensions.Options;
 
@@ -46,31 +47,31 @@ namespace Fims.Aws.Lambda
         /// <summary>
         /// Invokes a lambda worker
         /// </summary>
-        /// <param name="workerFunctionName"></param>
+        /// <param name="workerFunctionId"></param>
         /// <param name="environment"></param>
         /// <param name="jobAssignment"></param>
         /// <returns></returns>
-        public async Task Invoke(string workerFunctionName, IEnvironment environment, JobAssignment jobAssignment)
+        public async Task Invoke(string workerFunctionId, IEnvironment environment, JobAssignment jobAssignment)
         {
             try
             {
-                Logger.Info("Invoking lambda function with name '{0}' for job assignment {1}...", workerFunctionName, jobAssignment.Id);
+                Logger.Info("Invoking lambda function with name '{0}' for job assignment {1}...", workerFunctionId, jobAssignment.Id);
 
                 await Lambda.InvokeAsync(
                     new Amazon.Lambda.Model.InvokeRequest
                     {
-                        FunctionName = workerFunctionName,
+                        FunctionName = workerFunctionId,
                         InvocationType = "Event",
                         LogType = "None",
                         Payload = ResourceSerializer.Serialize(jobAssignment)
                     });
 
-                Logger.Info("Invocation of lambda function with name '{0}' for job assignment {1} succeeded.", workerFunctionName, jobAssignment.Id);
+                Logger.Info("Invocation of lambda function with name '{0}' for job assignment {1} succeeded.", workerFunctionId, jobAssignment.Id);
             }
             catch (Exception ex)
             {
                 Logger.Error("Failed to invoke lambda function with name '{0}' for job assignment {1}. Exception: {2}",
-                             workerFunctionName,
+                             workerFunctionId,
                              jobAssignment.Id,
                              ex);
                 throw;

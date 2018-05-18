@@ -2,7 +2,6 @@
 using Fims.Server;
 using Fims.Server.Api;
 using Fims.Server.Files;
-using Fims.Server.LiteDb;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -12,12 +11,19 @@ namespace Fims.WebApi.Services.ServiceRegistry
 {
     public class Startup
     {
-        private IConfiguration Configuration { get; }
-
+        /// <summary>
+        /// Instantiates the <see cref="Startup"/> object
+        /// </summary>
+        /// <param name="configuration"></param>
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
         }
+
+        /// <summary>
+        /// Gets the configuration
+        /// </summary>
+        private IConfiguration Configuration { get; }
 
         /// <summary>
         /// Configures FIMS services
@@ -28,7 +34,7 @@ namespace Fims.WebApi.Services.ServiceRegistry
             services.AddConsoleLogger()
                     .AddLocalFileStorage()
                     .AddDynamoDbFimsRepository(opts => Configuration.Bind("AWS", opts))
-                    .AddFimsWebApi<Fims.Services.ServiceRegistry.ServiceRegistry>();
+                    .AddFimsWebApi<Fims.Services.ServiceRegistry.ServiceRegistry>(Configuration);
         }
 
         /// <summary>
@@ -39,7 +45,7 @@ namespace Fims.WebApi.Services.ServiceRegistry
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
-                app.UseDeveloperExceptionPage().UseIisExpressUrl();
+                app.UseDeveloperExceptionPage();
 
             app.UseFimsWebApi();
         }

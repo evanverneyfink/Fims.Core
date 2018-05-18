@@ -1,7 +1,6 @@
 ﻿using System;
 using Fims.Core.Serialization;
 using Fims.Server;
-using Fims.Server.Api;
 using Fims.Services.Jobs.WorkerFunctions;
 
 namespace Fims.Aws.ServiceBuilding

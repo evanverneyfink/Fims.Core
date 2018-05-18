@@ -6,6 +6,7 @@ using Fims.Server;
 using Fims.Server.Api;
 using Fims.Server.Business;
 using Fims.Server.Data;
+using Fims.Server.Environment;
 using Fims.Services.Jobs.WorkerFunctions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -30,14 +31,12 @@ namespace Fims.Aws.ServiceBuilding
         /// <summary>
         /// Creates a <see cref="FimsAwsServiceBuilder"/>
         /// </summary>
-        /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public static FimsAwsServiceBuilder Create<T>()
-            where T : class, IEnvironment
+        public static FimsAwsServiceBuilder Create(Action<EnvironmentOptions> configureEnvironmentVariables = null)
         {
             return new FimsAwsServiceBuilder(
                 new ServiceCollection().AddFimsResourceDataHandling()
-                                       .AddScoped<IEnvironment, T>());
+                                       .AddEnvironment(configureEnvironmentVariables));
         }
 
         /// <summary>
@@ -112,14 +111,14 @@ namespace Fims.Aws.ServiceBuilding
         /// </summary>
         /// <returns></returns>
         public IFimsAwsResourceApi BuildResourceApi<TRequestContext, TResourceRegistration>(Action<IServiceCollection> addAdditionalServices = null)
-            where TRequestContext : class, IRequestContext
+            where TRequestContext : class, IRequest
             where TResourceRegistration : IResourceHandlerRegistration, new()
         {
             ServiceCollection
                 .AddSingleton<ILogger, ConsoleLogger>()
                 .AddFimsResourceHandling<TResourceRegistration>()
                 .AddFimsServerDefaultApi()
-                .AddScoped<IRequestContext, TRequestContext>();
+                .AddScoped<IRequest, TRequestContext>();
 
             addAdditionalServices?.Invoke(ServiceCollection);
 

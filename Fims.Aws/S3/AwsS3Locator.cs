@@ -1,5 +1,4 @@
 ﻿using Fims.Core.Model;
-using Newtonsoft.Json.Linq;
 
 namespace Fims.Aws.S3
 {

@@ -1,5 +1,6 @@
 ﻿using Fims.Server;
 using Fims.Server.Api;
+using Fims.Server.Environment;
 using Fims.Server.Files;
 using Fims.Server.LiteDb;
 using Fims.Services.Ame.MediaInfo;
@@ -19,9 +20,10 @@ namespace Fims.WebApi.Services.Ame.MediaInfo
         /// <param name="configuration"></param>
         public Startup(IConfiguration configuration)
         {
-            // set worker function name
-            configuration[nameof(WorkerFunctionEnvironmentExtensions.WorkerFunctionName)] = typeof(MediaInfoWorker).AssemblyQualifiedName;
+            Configuration = configuration;
         }
+
+        private IConfiguration Configuration { get; }
 
         /// <summary>
         /// Configures FIMS services
@@ -29,11 +31,14 @@ namespace Fims.WebApi.Services.Ame.MediaInfo
         /// <param name="services"></param>
         public void ConfigureServices(IServiceCollection services)
         {
+            // set worker function name
+            Configuration[nameof(WorkerFunctionEnvironmentExtensions.WorkerFunctionName)] = typeof(MediaInfoWorker).AssemblyQualifiedName;
+
             services.AddConsoleLogger()
                     .AddLocalFileStorage()
                     .AddLiteDb()
                     .AddLocalMediaInfo()
-                    .AddFimsInProcessWorkerFunctionWebApi<MediaInfoWorker>();
+                    .AddFimsInProcessWorkerFunctionWebApi<MediaInfoWorker>(Configuration);
         }
 
         /// <summary>
@@ -44,7 +49,7 @@ namespace Fims.WebApi.Services.Ame.MediaInfo
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
-                app.UseDeveloperExceptionPage().UseIisExpressUrl();
+                app.UseDeveloperExceptionPage();
 
             app.UseFimsWebApi();
         }

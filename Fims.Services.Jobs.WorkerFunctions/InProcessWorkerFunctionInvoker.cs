@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Fims.Core.Model;
-using Fims.Server;
+using Fims.Server.Environment;
 
 namespace Fims.Services.Jobs.WorkerFunctions
 {
@@ -24,14 +24,14 @@ namespace Fims.Services.Jobs.WorkerFunctions
         /// <summary>
         /// Invokes a worker function in-process
         /// </summary>
-        /// <param name="workerFunctionName"></param>
+        /// <param name="workerFunctionId"></param>
         /// <param name="environment"></param>
         /// <param name="jobAssignment"></param>
         /// <returns></returns>
-        public Task Invoke(string workerFunctionName, IEnvironment environment, JobAssignment jobAssignment)
+        public Task Invoke(string workerFunctionId, IEnvironment environment, JobAssignment jobAssignment)
         {
             // get the worker using the function name
-            var worker = GetWorker(workerFunctionName);
+            var worker = GetWorker(workerFunctionId);
 
             // execute the worker on a background thread
             worker.Execute(jobAssignment);

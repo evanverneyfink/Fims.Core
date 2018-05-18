@@ -12,7 +12,7 @@ namespace Fims.Server.Business
         /// <param name="configureOptions"></param>
         /// <returns></returns>
         public static IServiceCollection AddFimsResourceHandling(this IServiceCollection serviceCollection,
-                                                                 Action<ResourceHandlerRegistryOptions> configureOptions)
+                                                                 Action<ResourceHandlerRegistryOptions> configureOptions = null)
         {
             // create registry options for service collection
             var opts = new ResourceHandlerRegistryOptions(serviceCollection);
@@ -44,7 +44,9 @@ namespace Fims.Server.Business
         public static IServiceCollection AddFimsResourceHandling(this IServiceCollection serviceCollection,
                                                                  IResourceHandlerRegistration resourceHandlerRegistration)
         {
-            return serviceCollection.AddFimsResourceHandling(resourceHandlerRegistration.Register);
+            return serviceCollection.AddFimsResourceHandling(resourceHandlerRegistration != null
+                                                                 ? resourceHandlerRegistration.Register
+                                                                 : default(Action<ResourceHandlerRegistryOptions>));
         }
     }
 }
