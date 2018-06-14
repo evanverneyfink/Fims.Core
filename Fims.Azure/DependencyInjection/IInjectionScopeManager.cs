@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Fims.Azure.DependencyInjection
 {
@@ -8,7 +9,7 @@ namespace Fims.Azure.DependencyInjection
         /// Begins a scope when a function starts
         /// </summary>
         /// <param name="id"></param>
-        void BeginScope(Guid id);
+        IServiceScope BeginScope(Guid id);
 
         /// <summary>
         /// Ends a scope when a function ends

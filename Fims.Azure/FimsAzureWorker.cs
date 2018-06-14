@@ -1,8 +1,9 @@
-﻿using System.Net.Http;
+﻿using System.IO;
 using System.Threading.Tasks;
 using Fims.Core.Model;
 using Fims.Core.Serialization;
 using Fims.Services.Jobs.WorkerFunctions;
+using Microsoft.AspNetCore.Http;
 
 namespace Fims.Azure
 {
@@ -34,9 +35,9 @@ namespace Fims.Azure
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task DoWork(HttpRequestMessage request)
+        public async Task DoWork(HttpRequest request)
         {
-            await Worker.Execute(await ResourceSerializer.Deserialize<JobAssignment>(await request.Content.ReadAsStringAsync()));
+            await Worker.Execute(await ResourceSerializer.Deserialize<JobAssignment>(await new StreamReader(request.Body).ReadToEndAsync()));
         }
     }
 }

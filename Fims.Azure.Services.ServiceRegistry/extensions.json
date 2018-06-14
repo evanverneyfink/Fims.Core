@@ -1,0 +1,7 @@
+﻿{
+  "extensions": [
+    {
+      "TypeName": "Fims.Azure.DependencyInjection.DependencyInjectionExtension`1[[Fims.Azure.Services.ServiceRegistry.Startup, Fims.Azure.Services.ServiceRegistry]], Fims.Azure"
+    }
+  ]
+}

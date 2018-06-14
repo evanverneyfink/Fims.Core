@@ -3,6 +3,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Fims.Azure.DependencyInjection;
 using Fims.Server.Business;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Fims.Azure.Services.Ame.MediaInfo
 {
@@ -14,7 +16,7 @@ namespace Fims.Azure.Services.Ame.MediaInfo
         /// <param name="resourceApi"></param>
         /// <param name="request"></param>
         /// <returns>The list of blogs</returns>
-        public static async Task<HttpResponseMessage> JobApi([Inject] IFimsAzureResourceApi resourceApi, HttpRequestMessage request)
+        public static async Task<IActionResult> JobApi([Inject] IFimsAzureResourceApi resourceApi, HttpRequest request)
         {
             return await resourceApi.HandleRequest(request);
         }
@@ -25,10 +27,10 @@ namespace Fims.Azure.Services.Ame.MediaInfo
         /// <param name="worker"></param>
         /// <param name="request"></param>
         /// <returns></returns>
-        public static async Task<HttpResponseMessage> Worker([Inject] IFimsAzureWorker worker, HttpRequestMessage request)
+        public static async Task<IActionResult> Worker([Inject] IFimsAzureWorker worker, HttpRequest request)
         {
             await worker.DoWork(request);
-            return new HttpResponseMessage(HttpStatusCode.OK);
+            return new OkResult();
         }
     }
 }

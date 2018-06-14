@@ -8,7 +8,7 @@ namespace Fims.Core
     {
         public static IDictionary<string, string> QueryParameters(this Uri uri)
             => uri != null && !string.IsNullOrWhiteSpace(uri.Query)
-                   ? uri.Query.SplitOn("&").Select(p => StringExtensions.SplitOn(p, "=")).ToDictionary(p => p[0], p => p[1])
+                   ? uri.Query.SplitOn("&").Select(p => p.SplitOn("=")).ToDictionary(p => p[0], p => p[1])
                    : new Dictionary<string, string>();
     }
 }

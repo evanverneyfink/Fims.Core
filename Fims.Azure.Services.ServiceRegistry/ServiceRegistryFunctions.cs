@@ -1,14 +1,19 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Fims.Azure.DependencyInjection;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.WebJobs;
 
 namespace Fims.Azure.Services.ServiceRegistry
 {
     public static class ServiceRegistryFunctions
     {
-        public static Task<HttpResponseMessage> HandleServiceRegistryRequest([Inject] IFimsAzureResourceApi resourceApi, HttpRequestMessage request)
+        [FunctionName(nameof(HandleRequest))]
+        public static Task<IActionResult> HandleRequest([HttpTrigger] HttpRequest request, [Inject] IFimsAzureResourceApi resourceApi)
         {
-            return resourceApi.HandleRequest(request);
+            return Task.FromResult<IActionResult>(new OkObjectResult("You did it!"));
+
+            //return resourceApi.HandleRequest(request);
         }
     }
 }

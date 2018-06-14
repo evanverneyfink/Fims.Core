@@ -2,9 +2,12 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Fims.Azure.Http;
 using Fims.Server;
 using Fims.Server.Api;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Fims.Azure
 {
@@ -36,15 +39,17 @@ namespace Fims.Azure
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        public async Task<HttpResponseMessage> HandleRequest(HttpRequestMessage request)
+        public async Task<IActionResult> HandleRequest(HttpRequest request)
         {
+            HttpResponseMessage response;
             try
             {
                 Logger.Info("Starting request handling...");
 
                 // handle request
-                return await RequestHandler.HandleRequest(new HttpRequestMessageRequest(request)) is IHttpResponseMessageResponse response
-                           ? response.AsHttpResponseMessage()
+                response =
+                    await RequestHandler.HandleRequest(new HttpRequestWrapper(request)) is IHttpResponseMessageResponse responseWrapper
+                           ? responseWrapper.AsHttpResponseMessage()
                            : new HttpResponseMessage
                            {
                                StatusCode = HttpStatusCode.InternalServerError,
@@ -58,12 +63,14 @@ namespace Fims.Azure
                 Logger.Error($"An error occurred running API Gateway proxy lambda. Error: {exception}");
 
                 // return unexpected 500
-                return new HttpResponseMessage
+                response = new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.InternalServerError,
                     Content = new StringContent("An unexpected error occurred processing the request.")
                 };
             }
+
+            return new ResponseMessageResult(response);
         }
     }
 }

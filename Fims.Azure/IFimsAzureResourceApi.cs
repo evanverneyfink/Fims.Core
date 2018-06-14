@@ -1,5 +1,6 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Fims.Azure
 {
@@ -10,6 +11,6 @@ namespace Fims.Azure
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task<HttpResponseMessage> HandleRequest(HttpRequestMessage request);
+        Task<IActionResult> HandleRequest(HttpRequest request);
     }
 }

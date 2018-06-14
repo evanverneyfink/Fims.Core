@@ -67,13 +67,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.WebApi.Services.Jobs.J
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Azure", "Fims.Azure\Fims.Azure.csproj", "{1B0735A3-FEC3-4242-80C8-A7B6D6C243FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.Azure.Services.Jobs.JobRepository", "Fims.Azure.Services.Jobs.JobRepository\Fims.Azure.Services.Jobs.JobRepository.csproj", "{8550E7A7-96B5-4658-A4C0-8B5386AC9304}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Azure.Services.Jobs.JobRepository", "Fims.Azure.Services.Jobs.JobRepository\Fims.Azure.Services.Jobs.JobRepository.csproj", "{8550E7A7-96B5-4658-A4C0-8B5386AC9304}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.Azure.Services.Jobs.JobProcessor", "Fims.Azure.Services.Jobs.JobProcessor\Fims.Azure.Services.Jobs.JobProcessor.csproj", "{05B8B6B9-B1E6-4604-8771-13CCD3D575DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Azure.Services.Jobs.JobProcessor", "Fims.Azure.Services.Jobs.JobProcessor\Fims.Azure.Services.Jobs.JobProcessor.csproj", "{05B8B6B9-B1E6-4604-8771-13CCD3D575DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.Azure.Services.ServiceRegistry", "Fims.Azure.Services.ServiceRegistry\Fims.Azure.Services.ServiceRegistry.csproj", "{06E77D63-61A5-486B-A428-C0B62FF3E120}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Azure.Services.Ame.MediaInfo", "Fims.Azure.Services.Ame.MediaInfo\Fims.Azure.Services.Ame.MediaInfo.csproj", "{D08DCEF6-DCB3-4CDF-B948-2C4B13124484}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.Azure.Services.Ame.MediaInfo", "Fims.Azure.Services.Ame.MediaInfo\Fims.Azure.Services.Ame.MediaInfo.csproj", "{D08DCEF6-DCB3-4CDF-B948-2C4B13124484}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fims.Azure.Services.ServiceRegistry", "Fims.Azure.Services.ServiceRegistry\Fims.Azure.Services.ServiceRegistry.csproj", "{A92888BB-CE4D-4B1E-918A-CBBFFBAA6637}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fims.Azure.DependencyInjection", "Fims.Azure.DependencyInjection\Fims.Azure.DependencyInjection.csproj", "{ECAD612D-B5DA-4455-A804-F313AD5C9FF9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -189,14 +191,18 @@ Global
 		{05B8B6B9-B1E6-4604-8771-13CCD3D575DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05B8B6B9-B1E6-4604-8771-13CCD3D575DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05B8B6B9-B1E6-4604-8771-13CCD3D575DE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{06E77D63-61A5-486B-A428-C0B62FF3E120}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{06E77D63-61A5-486B-A428-C0B62FF3E120}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{06E77D63-61A5-486B-A428-C0B62FF3E120}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{06E77D63-61A5-486B-A428-C0B62FF3E120}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D08DCEF6-DCB3-4CDF-B948-2C4B13124484}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D08DCEF6-DCB3-4CDF-B948-2C4B13124484}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D08DCEF6-DCB3-4CDF-B948-2C4B13124484}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D08DCEF6-DCB3-4CDF-B948-2C4B13124484}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A92888BB-CE4D-4B1E-918A-CBBFFBAA6637}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A92888BB-CE4D-4B1E-918A-CBBFFBAA6637}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A92888BB-CE4D-4B1E-918A-CBBFFBAA6637}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A92888BB-CE4D-4B1E-918A-CBBFFBAA6637}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECAD612D-B5DA-4455-A804-F313AD5C9FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECAD612D-B5DA-4455-A804-F313AD5C9FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECAD612D-B5DA-4455-A804-F313AD5C9FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECAD612D-B5DA-4455-A804-F313AD5C9FF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -232,8 +238,9 @@ Global
 		{1B0735A3-FEC3-4242-80C8-A7B6D6C243FF} = {EA660970-ADD0-4CC1-BE09-7CA29BAA19D3}
 		{8550E7A7-96B5-4658-A4C0-8B5386AC9304} = {EA660970-ADD0-4CC1-BE09-7CA29BAA19D3}
 		{05B8B6B9-B1E6-4604-8771-13CCD3D575DE} = {EA660970-ADD0-4CC1-BE09-7CA29BAA19D3}
-		{06E77D63-61A5-486B-A428-C0B62FF3E120} = {EA660970-ADD0-4CC1-BE09-7CA29BAA19D3}
 		{D08DCEF6-DCB3-4CDF-B948-2C4B13124484} = {EA660970-ADD0-4CC1-BE09-7CA29BAA19D3}
+		{A92888BB-CE4D-4B1E-918A-CBBFFBAA6637} = {EA660970-ADD0-4CC1-BE09-7CA29BAA19D3}
+		{ECAD612D-B5DA-4455-A804-F313AD5C9FF9} = {EA660970-ADD0-4CC1-BE09-7CA29BAA19D3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D3445F93-A656-4C90-8AC9-8376F46347D8}

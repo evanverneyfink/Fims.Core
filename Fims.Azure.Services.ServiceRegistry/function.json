@@ -1,0 +1,16 @@
+﻿{
+  "bindings": [
+    {
+      "type": "httpTrigger",
+      "name": "request",
+      "authLevel": "function"
+    },
+    {
+      "type": "inject",
+      "name": "resourceApi" 
+    }
+  ],
+  "disabled": false,
+  "scriptFile": "../bin/Fims.Azure.Services.ServiceRegistry.dll",
+  "entryPoint": "Fims.Azure.Services.ServiceRegistry.ServiceRegistryFunctions.HandleRequest"
+}

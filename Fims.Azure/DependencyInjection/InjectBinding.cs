@@ -54,6 +54,6 @@ namespace Fims.Azure.DependencyInjection
         /// Gets a parameter descriptor using the underlying parameter 
         /// </summary>
         /// <returns></returns>
-        public ParameterDescriptor ToParameterDescriptor() => new ParameterDescriptor{Name = Parameter.Name, Type = Parameter.ParameterType.AssemblyQualifiedName};
+        public ParameterDescriptor ToParameterDescriptor() => new ParameterDescriptor {Type = "inject", Name = Parameter.Name};
     }
 }

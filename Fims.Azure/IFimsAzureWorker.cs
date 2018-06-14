@@ -1,5 +1,5 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace Fims.Azure
 {
@@ -10,6 +10,6 @@ namespace Fims.Azure
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Task DoWork(HttpRequestMessage request);
+        Task DoWork(HttpRequest request);
     }
 }

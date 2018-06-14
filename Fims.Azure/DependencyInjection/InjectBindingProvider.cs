@@ -9,7 +9,10 @@ namespace Fims.Azure.DependencyInjection
         /// Instantiates an <see cref="InjectBindingProvider"/>
         /// </summary>
         /// <param name="injectionScopeManager"></param>
-        public InjectBindingProvider(IInjectionScopeManager injectionScopeManager) => InjectionScopeManager = injectionScopeManager;
+        public InjectBindingProvider(IInjectionScopeManager injectionScopeManager)
+        {
+            InjectionScopeManager = injectionScopeManager;
+        }
 
         /// <summary>
         /// Gets the injection scope manager
@@ -22,6 +25,8 @@ namespace Fims.Azure.DependencyInjection
         /// <param name="context"></param>
         /// <returns></returns>
         public Task<IBinding> TryCreateAsync(BindingProviderContext context)
-            => Task.FromResult<IBinding>(new InjectBinding(InjectionScopeManager, context.Parameter));
+        {
+            return Task.FromResult<IBinding>(new InjectBinding(InjectionScopeManager, context.Parameter));
+        }
     }
 }

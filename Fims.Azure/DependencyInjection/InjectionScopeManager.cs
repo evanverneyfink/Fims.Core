@@ -26,7 +26,12 @@ namespace Fims.Azure.DependencyInjection
         /// Begins a scope when a function starts
         /// </summary>
         /// <param name="id"></param>
-        public void BeginScope(Guid id) => Scopes.TryAdd(id, ServiceProvider.CreateScope());
+        public IServiceScope BeginScope(Guid id)
+        {
+            var scope = ServiceProvider.CreateScope();
+            Scopes.TryAdd(id, scope);
+            return scope;
+        }
 
         /// <summary>
         /// Ends a scope when a function ends
@@ -43,7 +48,6 @@ namespace Fims.Azure.DependencyInjection
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public IServiceProvider GetServiceProvider(Guid id) =>
-            Scopes.TryGetValue(id, out var scope) ? scope.ServiceProvider : throw new Exception($"Scope with ID {id} not found.");
+        public IServiceProvider GetServiceProvider(Guid id) => (Scopes.TryGetValue(id, out var scope) ? scope : BeginScope(id)).ServiceProvider;
     }
 }
