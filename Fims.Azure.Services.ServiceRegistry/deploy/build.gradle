@@ -20,7 +20,7 @@ copyDepsJson.dependsOn(dotNetPublish);
 task copyFunctionJson(type: Copy) {
     from ".."
     include "function.json"
-    into "..\\bin\\Release\\netstandard2.0\\azure\\function\\HandleRequest"
+    into "..\\bin\\Release\\netstandard2.0\\azure\\function\\ResourceApi"
 }
 copyFunctionJson.dependsOn(dotNetPublish);
 
@@ -60,7 +60,7 @@ setZipFunctionVar.dependsOn(zipOutput);
 
 task terraformInit(type: Exec) {
     commandLine "cmd", "/c", "terraform"
-    args "init", "-input=false"
+    args "init", "-input=false", "-backend-config=backend.tf"
     workingDir "terraform"
 }
 

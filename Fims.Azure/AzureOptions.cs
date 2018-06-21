@@ -4,7 +4,7 @@ using Microsoft.WindowsAzure.Storage.File;
 
 namespace Fims.Azure
 {
-    public class AzureOptions
+    public abstract class AzureOptions
     {
         /// <summary>
         /// Gets or sets the Azure account name
@@ -26,11 +26,5 @@ namespace Fims.Azure
                           ? new StorageCredentials(AccountName, KeyValue)
                           : new StorageCredentials(AccountName))
                    : new StorageCredentials();
-
-        /// <summary>
-        /// Creates a file client
-        /// </summary>
-        /// <returns></returns>
-        public CloudFileClient CreateFileClient() => new CloudStorageAccount(StorageCredentials, true).CreateCloudFileClient();
     }
 }

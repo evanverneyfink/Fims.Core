@@ -1,18 +1,18 @@
-﻿using System.Net;
-using System.Net.Http;
+﻿using System.IO;
+using System.Net;
 using System.Text;
-using Fims.Server;
 using Fims.Server.Api;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json.Linq;
 
 namespace Fims.Azure.Http
 {
-    public class HttpResponseMessageResponse : IHttpResponseMessageResponse
+    public class ActionResultResponse : IActionResultResponse
     {
         /// <summary>
         /// Gets the underlying response
         /// </summary>
-        private HttpResponseMessage Response { get; } = new HttpResponseMessage();
+        private HttpResponseResult Response { get; } = new HttpResponseResult();
 
         /// <summary>
         /// Sets the status of the response
@@ -33,7 +33,7 @@ namespace Fims.Azure.Http
         /// <returns></returns>
         public IResponse WithHeader(string header, string value)
         {
-            if (Response.Headers.Contains(header))
+            if (Response.Headers.ContainsKey(header))
                 Response.Headers.Remove(header);
 
             Response.Headers.Add(header, value);
@@ -48,7 +48,8 @@ namespace Fims.Azure.Http
         /// <returns></returns>
         public IResponse WithPlainTextBody(string message)
         {
-            Response.Content = new StringContent(message, Encoding.UTF8, "text/plain");
+            Response.ContentType = "text/plain";
+            Response.Body = new MemoryStream(Encoding.UTF8.GetBytes(message));
             return this;
         }
 
@@ -59,14 +60,15 @@ namespace Fims.Azure.Http
         /// <returns></returns>
         public IResponse WithJsonBody(JToken jToken)
         {
-            Response.Content = new JsonContent(jToken);
+            Response.ContentType = "application/json";
+            Response.Body = new MemoryStream(Encoding.UTF8.GetBytes(jToken.ToString()));
             return this;
         }
 
         /// <summary>
-        /// Gets the response as an <see cref="HttpResponseMessage"/>
+        /// Gets the response as an <see cref="IActionResult"/>
         /// </summary>
         /// <returns></returns>
-        public HttpResponseMessage AsHttpResponseMessage() => Response;
+        public IActionResult AsActionResult() => Response;
     }
 }

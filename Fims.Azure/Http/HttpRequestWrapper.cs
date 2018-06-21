@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Fims.Server.Api;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Fims.Azure.Http
 {
@@ -32,7 +31,7 @@ namespace Fims.Azure.Http
         /// <summary>
         /// Gets the path of the request
         /// </summary>
-        public string Path => Request.GetDisplayUrl();
+        public string Path => Request.Path;
 
         /// <summary>
         /// Gets the dictionary of query string parameters
@@ -43,7 +42,7 @@ namespace Fims.Azure.Http
         /// Gets the response to be sent back to the requester
         /// </summary>
         /// <returns></returns>
-        public IResponse Response { get; } = new HttpResponseMessageResponse();
+        public IResponse Response { get; } = new ActionResultResponse();
 
         /// <summary>
         /// Reads the body of the reqeust as JSON

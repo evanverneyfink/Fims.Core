@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web.Http;
 using Fims.Azure.Http;
 using Fims.Server;
 using Fims.Server.Api;
@@ -41,36 +38,24 @@ namespace Fims.Azure
         /// <returns></returns>
         public async Task<IActionResult> HandleRequest(HttpRequest request)
         {
-            HttpResponseMessage response;
             try
             {
                 Logger.Info("Starting request handling...");
 
                 // handle request
-                response =
-                    await RequestHandler.HandleRequest(new HttpRequestWrapper(request)) is IHttpResponseMessageResponse responseWrapper
-                           ? responseWrapper.AsHttpResponseMessage()
-                           : new HttpResponseMessage
-                           {
-                               StatusCode = HttpStatusCode.InternalServerError,
-                               Content = new StringContent(
-                                   "An unexpected error occurred. Internal configuration for API Gateway Proxy requests invalid.")
-                           };
+                return
+                    await RequestHandler.HandleRequest(new HttpRequestWrapper(request)) is IActionResultResponse responseWrapper
+                        ? responseWrapper.AsActionResult()
+                        : throw new Exception(
+                              "An error occurred running the resource API Azure function. Internal configuration for Azure Function requests invalid.");
             }
             catch (Exception exception)
             {
                 // log error
-                Logger.Error($"An error occurred running API Gateway proxy lambda. Error: {exception}");
+                Logger.Error($"An error occurred running the resource API Azure Function. Error: {exception}");
 
-                // return unexpected 500
-                response = new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.InternalServerError,
-                    Content = new StringContent("An unexpected error occurred processing the request.")
-                };
+                throw;
             }
-
-            return new ResponseMessageResult(response);
         }
     }
 }

@@ -19,9 +19,9 @@ namespace Fims.Azure.FileStorage
         /// Instantiates an <see cref="AzureFileStorage"/>
         /// </summary>
         /// <param name="options"></param>
-        public AzureFileStorage(IOptions<AzureOptions> options)
+        public AzureFileStorage(IOptions<FileStorageOptions> options)
         {
-            FileClient = (options?.Value ?? new AzureOptions()).CreateFileClient();
+            FileClient = (options?.Value ?? new FileStorageOptions()).CreateFileClient();
         }
 
         /// <summary>

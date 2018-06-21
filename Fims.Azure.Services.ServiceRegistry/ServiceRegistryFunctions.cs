@@ -8,12 +8,10 @@ namespace Fims.Azure.Services.ServiceRegistry
 {
     public static class ServiceRegistryFunctions
     {
-        [FunctionName(nameof(HandleRequest))]
-        public static Task<IActionResult> HandleRequest([HttpTrigger] HttpRequest request, [Inject] IFimsAzureResourceApi resourceApi)
+        [FunctionName(nameof(ResourceApi))]
+        public static Task<IActionResult> ResourceApi([HttpTrigger] HttpRequest request, [Inject] IFimsAzureResourceApi resourceApi)
         {
-            return Task.FromResult<IActionResult>(new OkObjectResult("You did it!"));
-
-            //return resourceApi.HandleRequest(request);
+            return resourceApi.HandleRequest(request);
         }
     }
 }

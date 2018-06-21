@@ -13,6 +13,9 @@ variable environmentType {}
 variable restApiHandler {}
 variable restApiZipFile {}
 
+terraform {
+	backend "s3" {}
+}
 
 module "service" {
   source = "./module"

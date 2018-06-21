@@ -3,7 +3,8 @@
     {
       "type": "httpTrigger",
       "name": "request",
-      "authLevel": "function"
+      "authLevel": "function",
+      "route": "{*all}" 
     },
     {
       "type": "inject",
@@ -12,5 +13,5 @@
   ],
   "disabled": false,
   "scriptFile": "../bin/Fims.Azure.Services.ServiceRegistry.dll",
-  "entryPoint": "Fims.Azure.Services.ServiceRegistry.ServiceRegistryFunctions.HandleRequest"
+  "entryPoint": "Fims.Azure.Services.ServiceRegistry.ServiceRegistryFunctions.ResourceApi"
 }
